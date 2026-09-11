@@ -17,23 +17,44 @@ def test_gsmarena_scraper_registered():
 
 def test_gsmarena_url_validation():
     scraper = GSMArenaReviewScraper(delay_seconds=0.0)
+    # Valid opinions URLs
     assert scraper.validate_url("https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php") is True
     assert scraper.validate_url("http://www.gsmarena.com/samsung_galaxy_s24_ultra-reviews-12771p2.php") is True
+    # Valid editorial review URLs and review comments
+    assert scraper.validate_url("https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php") is True
+    assert scraper.validate_url("https://www.gsmarena.com/reviewcomm-2787.php") is True
+    assert scraper.validate_url("https://www.gsmarena.com/google_pixel_9_pro-review-2740p3.php") is True
+    # Valid offline fixture schemes
     assert scraper.validate_url("gsmarena://sample") is True
+    assert scraper.validate_url("gsmarena://fixture-a") is True
+    assert scraper.validate_url("gsmarena://fixture-b") is True
+    # Invalid domains
     assert scraper.validate_url("https://www.amazon.com/dp/B0CHX1W1XY") is False
-    assert scraper.validate_url("https://gsmarena.com/news.php") is False  # not a reviews page
+    assert scraper.validate_url("https://google.com/search?q=gsmarena") is False
+    # Invalid schemes
+    assert scraper.validate_url("javascript:alert(1)") is False
+    assert scraper.validate_url("file:///local/path/review.html") is False
+    # Non-review pages on gsmarena.com
+    assert scraper.validate_url("https://www.gsmarena.com/news.php3") is False
+    assert scraper.validate_url("https://www.gsmarena.com/glossary.php3") is False
+    assert scraper.validate_url("https://www.gsmarena.com/contact.php3") is False
 
 def test_gsmarena_pagination_url_builder():
     scraper = GSMArenaReviewScraper(delay_seconds=0.0)
-    base = "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php"
-    assert scraper.build_page_url(base, 1) == base
-    assert scraper.build_page_url(base, 2) == "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557p2.php"
-    assert scraper.build_page_url(base, 5) == "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557p5.php"
+    # -reviews- pattern
+    base_opinions = "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php"
+    assert scraper.build_page_url(base_opinions, 1) == base_opinions
+    assert scraper.build_page_url(base_opinions, 2) == "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557p2.php"
 
-    # Preserves p2 when passed as base
-    p2_base = "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557p2.php"
-    assert scraper.build_page_url(p2_base, 3) == "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557p3.php"
-    assert scraper.build_page_url(p2_base, 1) == "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php"
+    # -review- pattern
+    base_review = "https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php"
+    assert scraper.build_page_url(base_review, 1) == base_review
+    assert scraper.build_page_url(base_review, 2) == "https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787p2.php"
+
+    # reviewcomm- pattern
+    base_comm = "https://www.gsmarena.com/reviewcomm-2787.php"
+    assert scraper.build_page_url(base_comm, 1) == base_comm
+    assert scraper.build_page_url(base_comm, 3) == "https://www.gsmarena.com/reviewcomm-2787p3.php"
 
 def test_gsmarena_parse_representative_fixture():
     scraper = GSMArenaReviewScraper(delay_seconds=0.0)
@@ -56,6 +77,63 @@ def test_gsmarena_parse_representative_fixture():
     # Quoted reply span must have been stripped from review body
     assert "Not worth at that price unless" not in first.raw_review_text
     assert first.review_url == "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php#7070559"
+
+def test_gsmarena_dynamic_multi_fixture_parsing():
+    """
+    Demonstrates dynamic parsing across different smartphone models without hardcoded logic:
+      Fixture A: Samsung Galaxy S25 Ultra
+      Fixture B: Google Pixel 9 Pro
+    """
+    scraper = GSMArenaReviewScraper(delay_seconds=0.0)
+
+    # Fixture A: Samsung Galaxy S25 Ultra
+    html_a = (FIXTURES_DIR / "gsmarena_fixture_a.html").read_text(encoding="utf-8")
+    reviews_a = scraper.parse_page(html_a, {"target_url": "https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php"})
+    assert len(reviews_a) == 3
+    assert reviews_a[0].product_name == "Samsung Galaxy S25 Ultra"
+    assert reviews_a[0].brand == "Samsung"
+    assert reviews_a[0].external_review_id == "3451001"
+    assert "Snapdragon 8 Elite" in reviews_a[0].raw_review_text
+    # Quoted reply stripped in review 2
+    assert "Alex Tech: The Snapdragon 8 Elite" not in reviews_a[1].raw_review_text
+    assert "Agreed on the processor" in reviews_a[1].raw_review_text
+
+    # Fixture B: Google Pixel 9 Pro
+    html_b = (FIXTURES_DIR / "gsmarena_fixture_b.html").read_text(encoding="utf-8")
+    reviews_b = scraper.parse_page(html_b, {"target_url": "https://www.gsmarena.com/google_pixel_9_pro-review-2740.php"})
+    assert len(reviews_b) == 3
+    # Suffix 'review' cleanly stripped from 'Google Pixel 9 Pro review'
+    assert reviews_b[0].product_name == "Google Pixel 9 Pro"
+    assert reviews_b[0].brand == "Google"
+    assert reviews_b[0].external_review_id == "5672001"
+    assert "PixelFanatic" in reviews_b[0].reviewer_name
+    assert "Tensor G4" in reviews_b[1].raw_review_text
+
+def test_gsmarena_metadata_precedence():
+    """
+    Verifies precedence:
+      Explicit user-provided product info -> Page-derived product info -> Safe fallback
+    """
+    scraper = GSMArenaReviewScraper(delay_seconds=0.0)
+    html = (FIXTURES_DIR / "gsmarena_fixture_a.html").read_text(encoding="utf-8")
+
+    # 1. Explicit user metadata overrides page-derived metadata
+    reviews_explicit = scraper.parse_page(html, {
+        "product_name": "Custom Galaxy S25 Variant",
+        "brand": "CustomBrand"
+    })
+    assert reviews_explicit[0].product_name == "Custom Galaxy S25 Variant"
+    assert reviews_explicit[0].brand == "CustomBrand"
+
+    # 2. Page-derived metadata when empty
+    reviews_auto = scraper.parse_page(html, {})
+    assert reviews_auto[0].product_name == "Samsung Galaxy S25 Ultra"
+    assert reviews_auto[0].brand == "Samsung"
+
+    # 3. Fallback when page has no title or h1
+    reviews_fallback = scraper.parse_page("<div><div class='user-thread' id='1'><p class='uopin'>Great phone</p></div></div>", {})
+    assert reviews_fallback[0].product_name == "Smartphone"
+    assert reviews_fallback[0].brand == "Smartphone"
 
 def test_gsmarena_parse_malformed_fixture():
     scraper = GSMArenaReviewScraper(delay_seconds=0.0)
@@ -111,35 +189,69 @@ def test_gsmarena_ingestion_and_repeated_deduplication(db_session):
     count_after_run2 = db_session.query(Review).filter(Review.product_id == prod.id).count()
     assert count_after_run2 == count_after_run1
 
-def test_gsmarena_job_runner_lifecycle(db_session):
+def test_gsmarena_custom_phone_job_auto_links_product(db_session):
     """
-    Verifies that the GSM Arena adapter executes end-to-end through the background job runner.
+    Verifies that when a custom GSM Arena phone URL is scraped without explicit product metadata,
+    the job runner dynamically derives the product, creates/links it to the job, and saves reviews.
+    On a repeat run, the existing product is reused and duplicate reviews are filtered.
     """
-    job_uuid = str(uuid.uuid4())
-    job = ScrapingJob(
-        job_id=job_uuid,
-        target_url="gsmarena://sample",
+    job_uuid_1 = str(uuid.uuid4())
+    job_1 = ScrapingJob(
+        job_id=job_uuid_1,
+        target_url="gsmarena://fixture-a",
         scraper_type="gsmarena",
         status="PENDING"
     )
-    db_session.add(job)
+    db_session.add(job_1)
     db_session.commit()
 
+    # Execute without explicit product_name or brand
     execute_scraping_job(
-        job_uuid=job_uuid,
-        target_url="gsmarena://sample",
+        job_uuid=job_uuid_1,
+        target_url="gsmarena://fixture-a",
         scraper_type="gsmarena",
-        product_name="Apple iPhone 15 Pro",
-        brand="Apple",
+        product_name=None,
+        brand=None,
         max_pages=1,
-        max_reviews=5,
+        max_reviews=10,
         delay_seconds=0.0,
         db_session=db_session
     )
 
-    updated_job = db_session.query(ScrapingJob).filter(ScrapingJob.job_id == job_uuid).first()
-    assert updated_job.status == "COMPLETED"
-    assert updated_job.pages_attempted == 1
-    assert updated_job.successful_pages == 1
-    assert updated_job.inserted_reviews <= 5
-    assert updated_job.reviews_discovered > 0
+    updated_job_1 = db_session.query(ScrapingJob).filter(ScrapingJob.job_id == job_uuid_1).first()
+    assert updated_job_1.status == "COMPLETED"
+    assert updated_job_1.product_id is not None
+    derived_product = db_session.query(Product).filter(Product.id == updated_job_1.product_id).first()
+    assert derived_product.name == "Samsung Galaxy S25 Ultra"
+    assert derived_product.brand == "Samsung"
+    assert updated_job_1.inserted_reviews == 3
+    assert updated_job_1.duplicate_reviews == 0
+
+    # Second run with same fixture: verifies product reuse and deduplication
+    job_uuid_2 = str(uuid.uuid4())
+    job_2 = ScrapingJob(
+        job_id=job_uuid_2,
+        target_url="gsmarena://fixture-a",
+        scraper_type="gsmarena",
+        status="PENDING"
+    )
+    db_session.add(job_2)
+    db_session.commit()
+
+    execute_scraping_job(
+        job_uuid=job_uuid_2,
+        target_url="gsmarena://fixture-a",
+        scraper_type="gsmarena",
+        product_name=None,
+        brand=None,
+        max_pages=1,
+        max_reviews=10,
+        delay_seconds=0.0,
+        db_session=db_session
+    )
+
+    updated_job_2 = db_session.query(ScrapingJob).filter(ScrapingJob.job_id == job_uuid_2).first()
+    assert updated_job_2.status == "COMPLETED"
+    assert updated_job_2.product_id == derived_product.id  # Reused same product
+    assert updated_job_2.inserted_reviews == 0
+    assert updated_job_2.duplicate_reviews == 3

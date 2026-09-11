@@ -97,3 +97,47 @@ def test_complete_deterministic_pipeline(client, db_session):
     reviews_res = client.get(f"/api/v1/reviews?product_id={prod_id}")
     assert reviews_res.status_code == 200
     assert reviews_res.json()["total"] > 0
+
+def test_api_custom_gsmarena_url_flow(client, db_session):
+    """
+    Verifies that a custom GSM Arena phone URL dispatched through the API
+    executes, auto-derives product metadata, and persists reviews accessible via API.
+    """
+    job_res = client.post("/api/v1/jobs/scrape", json={
+        "target_url": "gsmarena://fixture-a",
+        "scraper_type": "gsmarena",
+        "product_name": None,
+        "brand": None,
+        "max_pages": 1,
+        "max_reviews": 10,
+        "delay_seconds": 0.0
+    })
+    assert job_res.status_code == 202
+    job_uuid = job_res.json()["job_id"]
+
+    from backend.app.services.job_runner import execute_scraping_job
+    execute_scraping_job(
+        job_uuid=job_uuid,
+        target_url="gsmarena://fixture-a",
+        scraper_type="gsmarena",
+        product_name=None,
+        brand=None,
+        max_pages=1,
+        max_reviews=10,
+        delay_seconds=0.0,
+        db_session=db_session
+    )
+
+    # Verify Job finished and has derived product linked
+    job_status_res = client.get(f"/api/v1/jobs/{job_uuid}")
+    assert job_status_res.status_code == 200
+    job_data = job_status_res.json()
+    assert job_data["status"] == "COMPLETED"
+    assert job_data["product_id"] is not None
+    assert job_data["product_name"] == "Samsung Galaxy S25 Ultra"
+    assert job_data["inserted_reviews"] == 3
+
+    # Query reviews for derived product
+    reviews_res = client.get(f"/api/v1/reviews?product_id={job_data['product_id']}")
+    assert reviews_res.status_code == 200
+    assert reviews_res.json()["total"] == 3

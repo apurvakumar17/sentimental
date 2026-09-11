@@ -36,15 +36,20 @@ def compute_content_hash(product_id: int, source_or_text: str, raw_text: Optiona
 def get_or_create_product(db: Session, name: str, brand: Optional[str] = None, canonical_url: Optional[str] = None) -> Product:
     clean_name = name.strip()
     product = db.query(Product).filter(Product.name.ilike(clean_name)).first()
+    if not product and canonical_url:
+        product = db.query(Product).filter(Product.canonical_url == canonical_url.strip()).first()
     if not product:
         product = Product(
             name=clean_name,
             brand=brand.strip() if brand else None,
-            canonical_url=canonical_url
+            canonical_url=canonical_url.strip() if canonical_url else None
         )
         db.add(product)
         db.commit()
         db.refresh(product)
+    elif canonical_url and not product.canonical_url:
+        product.canonical_url = canonical_url.strip()
+        db.commit()
     return product
 
 def parse_iso_date(raw_date_str: Optional[str]):

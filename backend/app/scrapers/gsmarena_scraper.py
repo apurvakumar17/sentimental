@@ -27,39 +27,82 @@ class GSMArenaReviewScraper(BaseReviewScraper):
     def validate_url(self, url: str) -> bool:
         """
         Validates target URL format:
-        Matches public GSM Arena review URLs such as:
+        Matches public GSM Arena review/opinion URLs such as:
           https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php
+          https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php
+          https://www.gsmarena.com/reviewcomm-2787.php
         Also accepts gsmarena:// fixture URLs for offline deterministic testing.
+        Rejects non-GSM Arena domains, unsupported schemes, and non-review pages.
         """
         if not url:
             return False
-        clean = url.strip().lower()
+        clean = url.strip()
 
         # Offline test fixtures
-        if clean.startswith("gsmarena://"):
+        if clean.lower().startswith("gsmarena://"):
             return True
 
-        # Public GSM Arena review page pattern
-        if "gsmarena.com/" in clean and "-reviews-" in clean:
-            return True
+        from urllib.parse import urlparse
+        try:
+            parsed = urlparse(clean)
+        except Exception:
+            return False
 
-        return False
+        if parsed.scheme.lower() not in ("http", "https"):
+            return False
+
+        hostname = (parsed.hostname or "").lower()
+        if not (hostname == "gsmarena.com" or hostname.endswith(".gsmarena.com")):
+            return False
+
+        path = parsed.path.lower()
+        # Must be a review, user opinions, or review comments page
+        is_review_path = (
+            "-reviews-" in path or
+            "-review-" in path or
+            "reviewcomm-" in path
+        )
+        if not is_review_path or ".php" not in path:
+            return False
+
+        # Reject explicitly non-review sections even if containing keywords
+        disallowed_keywords = ("/news", "/glossary", "/contact", "/search", "/picus")
+        if any(path.startswith(kw) for kw in disallowed_keywords):
+            return False
+
+        return True
 
     def build_page_url(self, base_url: str, page_num: int) -> str:
         """
         Builds the canonical GSM Arena URL for a specific page:
-        Page 1: https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php
-        Page 2: https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557p2.php
-        Page N: https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557pN.php
+        Opinions:
+          Page 1: https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php
+          Page 2: https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557p2.php
+        Reviews:
+          Page 1: https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php
+          Page 2: https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787p2.php
+        Comments:
+          Page 1: https://www.gsmarena.com/reviewcomm-2787.php
+          Page 2: https://www.gsmarena.com/reviewcomm-2787p2.php
         """
         if base_url.startswith("gsmarena://"):
             return f"{base_url}?page={page_num}"
 
         if page_num <= 1:
             # Normalize to base URL without page suffix if present
-            return re.sub(r"-reviews-(\d+)p\d+\.php", r"-reviews-\1.php", base_url)
+            url = re.sub(r"-reviews-(\d+)p\d+\.php", r"-reviews-\1.php", base_url)
+            url = re.sub(r"-review-(\d+)p\d+\.php", r"-review-\1.php", url)
+            url = re.sub(r"reviewcomm-(\d+)p\d+\.php", r"reviewcomm-\1.php", url)
+            return url
 
-        return re.sub(r"-reviews-(\d+)(?:p\d+)?\.php", rf"-reviews-\g<1>p{page_num}.php", base_url)
+        if "-reviews-" in base_url:
+            return re.sub(r"-reviews-(\d+)(?:p\d+)?\.php", rf"-reviews-\g<1>p{page_num}.php", base_url)
+        elif "-review-" in base_url:
+            return re.sub(r"-review-(\d+)(?:p\d+)?\.php", rf"-review-\g<1>p{page_num}.php", base_url)
+        elif "reviewcomm-" in base_url:
+            return re.sub(r"reviewcomm-(\d+)(?:p\d+)?\.php", rf"reviewcomm-\g<1>p{page_num}.php", base_url)
+
+        return base_url
 
     def fetch_page_content(self, url: str, page_num: int) -> str:
         """
@@ -68,7 +111,16 @@ class GSMArenaReviewScraper(BaseReviewScraper):
         """
         # Handle local test fixtures for deterministic offline testing
         if url.startswith("gsmarena://"):
-            fixture_name = "gsmarena_malformed.html" if "malformed" in url else "gsmarena_sample.html"
+            clean_url = url.lower()
+            if "malformed" in clean_url:
+                fixture_name = "gsmarena_malformed.html"
+            elif "fixture-a" in clean_url or "fixture_a" in clean_url:
+                fixture_name = "gsmarena_fixture_a.html"
+            elif "fixture-b" in clean_url or "fixture_b" in clean_url:
+                fixture_name = "gsmarena_fixture_b.html"
+            else:
+                fixture_name = "gsmarena_sample.html"
+
             fixture_path = FIXTURES_DIR / fixture_name
             if fixture_path.exists():
                 logger.info(f"Loading local GSM Arena fixture: {fixture_path}")
@@ -90,20 +142,26 @@ class GSMArenaReviewScraper(BaseReviewScraper):
         - Extracts reviewer nickname from li.uname / li.uname2
         - Extracts review date from li.upost
         - Extracts review text from p.uopin (stripping blockquote replies)
-        - Computes review permalink URL (canonical URL + #id)
+        - Derives product name and brand dynamically if not supplied
+        - Sets product_url to target_url for canonical tracking
+        - Computes review permalink URL (target URL + #id)
         - Uses safe text normalization (Unicode NFKC, non-NLP)
         """
         soup = BeautifulSoup(html_content, "html.parser")
         reviews_list: List[RawReviewIn] = []
+        target_url = metadata.get("target_url", "")
 
-        # Infer product name and brand if not passed in metadata
+        # Infer product name and brand if not explicitly provided in metadata
         product_name = metadata.get("product_name")
         brand = metadata.get("brand")
 
         if not product_name:
             h1 = soup.find("h1")
             if h1:
-                product_name = h1.get_text(strip=True)
+                h1_text = h1.get_text(strip=True)
+                # Strip common suffixes like " review", " opinions", " user opinions"
+                cleaned_h1 = re.sub(r"\s+(?:review|opinions|user opinions|reviews)$", "", h1_text, flags=re.IGNORECASE).strip()
+                product_name = cleaned_h1 or h1_text
             elif soup.title:
                 title_text = soup.title.get_text(strip=True)
                 product_name = title_text.split("-")[0].strip() if "-" in title_text else title_text
@@ -148,13 +206,13 @@ class GSMArenaReviewScraper(BaseReviewScraper):
             # Safe normalization (Unicode NFKC, space collapsing, no NLP)
             normalized_text = safe_normalize_text(raw_text)
 
-            # Build permalink URL if target URL / canonical URL is available
-            target_url = metadata.get("target_url", "")
+            # Build permalink URL if target URL is available
             review_url = f"{target_url}#{ext_id}" if target_url and ext_id else None
 
             reviews_list.append(RawReviewIn(
                 product_name=product_name,
                 brand=brand,
+                product_url=target_url if target_url else None,
                 external_review_id=str(ext_id) if ext_id else None,
                 review_title=None,
                 raw_review_text=raw_text,

@@ -17,7 +17,7 @@ class ScrapingJobCreate(BaseModel):
         trimmed = v.strip()
         if not trimmed:
             raise ValueError("Target URL cannot be empty or whitespace")
-        valid_schemes = ("demo://", "http://", "https://", "demo")
+        valid_schemes = ("demo://", "http://", "https://", "demo", "gsmarena://")
         if not any(trimmed.lower().startswith(s) for s in valid_schemes):
             raise ValueError(f"Target URL must start with one of: {valid_schemes}")
         return trimmed

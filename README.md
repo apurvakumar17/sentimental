@@ -4,7 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB.svg)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC.svg)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-42%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-45%20Passing-brightgreen.svg)]()
 
 > **SmartReview** is an Aspect-Based Sentiment Analysis and Product Recommendation System for Smartphone Reviews.
 > This repository contains the hardened, academically defensible implementation of **Module 1**: "Smartphone Review Data Collection and Web Scraping System".
@@ -190,20 +190,22 @@ SmartReview provides two production-grade scrapers inheriting from `BaseReviewSc
    - Scheme: `demo://local-catalog/...`
 
 2. **`gsmarena` (`GSMArenaReviewScraper`)**:
-   - Production adapter for permitted public smartphone user reviews and opinions from **GSM Arena** (e.g. `https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php`).
-   - Parses thread containers (`div.user-thread`), extracting external IDs (`uopin` anchors), author names (`li.uname`), dates (`li.upost`), and authentic comment text while stripping nested reply quotes.
-   - Handles multi-page opinion pagination (`*-reviews-*p{page}.php`).
-   - Supports local fixture mode (`gsmarena://sample`) for fast, offline, and reliable unit tests.
+   - Production adapter for permitted public smartphone user reviews and opinions from **GSM Arena**.
+   - Supports **ANY** valid GSM Arena smartphone review page (both user opinion threads `*-reviews-*.php` and editorial phone review pages `*-review-*.php` / `reviewcomm-*.php`).
+   - Automatically derives `product_name` and `brand` from page metadata (`<h1>` / `<title>`) if not provided upfront by the user.
+   - Parses thread containers (`div.user-thread`), extracting external IDs (`uopin` anchors), author names (`li.uname`), dates (`li.upost`), and authentic comment text while cleanly stripping nested quote replies (`span.uinreply`).
+   - Handles multi-page opinion and review pagination (`*-reviews-*p{page}.php`, `*-review-*p{page}.php`).
+   - Supports local fixture schemes (`gsmarena://sample`, `gsmarena://fixture-a`, `gsmarena://fixture-b`, `gsmarena://malformed`) for fast, offline, and reliable unit tests.
 
 ### Scraping Request Example
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/v1/jobs/scrape" \
   -H "Content-Type: application/json" \
   -d '{
-    "target_url": "https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php",
+    "target_url": "https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php",
     "scraper_type": "gsmarena",
-    "product_name": "Apple iPhone 15 Pro",
-    "product_brand": "Apple",
+    "product_name": null,
+    "brand": null,
     "max_pages": 1,
     "max_reviews": 10,
     "delay_seconds": 2.0
@@ -241,15 +243,16 @@ for r in reviews:
 
 Run the full automated test suite:
 ```powershell
-.venv\Scripts\pytest backend/tests -v
+.venv\Scripts\python.exe -m pytest backend/tests -v
 ```
-**41 tests passing** covering:
+**45 tests passing** covering:
 - Database model persistence and constraints
 - Schema validation boundary conditions (ratings, URLs, negative limits)
 - 3-tier deduplication (external ID, review URL, deterministic content hash)
 - Safe text normalization (Unicode NFKC, HTML entities, zero NLP tampering)
 - Demo scraper hardening (max reviews limits, malformed HTML resilience, robots.txt)
-- GSM Arena production adapter (URL validation, review extraction, metadata parsing, quote cleaning, malformed resilience, deduplication)
+- GSM Arena production adapter (any review URL validation, review extraction, metadata parsing, quote cleaning, malformed resilience, multi-fixture tests, deduplication)
+- Dynamic product auto-derivation and canonical URL association
 - Job lifecycle state transitions and error log path sanitization
 - API endpoints (upfront scraper validation, 404s, 422s, end-to-end flow)
 

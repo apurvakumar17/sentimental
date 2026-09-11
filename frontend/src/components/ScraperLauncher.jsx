@@ -46,10 +46,10 @@ export default function ScraperLauncher({ onJobLaunched }) {
 
     try {
       const payload = {
-        target_url: targetUrl,
+        target_url: targetUrl.trim(),
         scraper_type: adapterType,
-        product_name: productName,
-        brand: brand,
+        product_name: productName.trim() || null,
+        brand: brand.trim() || null,
         max_pages: parseInt(maxPages, 10),
         max_reviews: maxReviews ? parseInt(maxReviews, 10) : null,
         delay_seconds: parseFloat(delaySeconds),
@@ -147,14 +147,17 @@ export default function ScraperLauncher({ onJobLaunched }) {
         </div>
       </div>
 
-      {/* Presets */}
+      {/* Quick Presets (Optional Shortcuts) */}
       <div className="mt-5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">
-          Target Smartphone Presets
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Quick Presets <span className="text-slate-500 font-normal lowercase">(optional shortcuts)</span>
+          </label>
+          <span className="text-[11px] text-slate-500">Clicking populates URL & metadata</span>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {currentPresets.map((preset) => {
-            const isSelected = targetUrl === preset.url;
+            const isSelected = targetUrl.trim() === preset.url.trim();
             return (
               <button
                 key={preset.url}
@@ -180,41 +183,82 @@ export default function ScraperLauncher({ onJobLaunched }) {
       </div>
 
       <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1.5">
-              Target Source URL
-            </label>
-            <input
-              type="text"
-              required
-              value={targetUrl}
-              onChange={(e) => setTargetUrl(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
-            />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-medium text-slate-300">
+                Target Source URL <span className="text-indigo-400 text-[11px] font-normal">(Authoritative Input)</span>
+              </label>
+              {currentPresets.find((p) => p.url.trim() === targetUrl.trim()) ? (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-950 border border-indigo-700/60 text-indigo-300 font-medium">
+                  Preset: {currentPresets.find((p) => p.url.trim() === targetUrl.trim()).name}
+                </span>
+              ) : (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-300 font-medium">
+                  Custom URL Active
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <input
+                type="text"
+                required
+                value={targetUrl}
+                onChange={(e) => setTargetUrl(e.target.value)}
+                placeholder={
+                  adapterType === 'demo'
+                    ? 'demo://local-catalog/...'
+                    : 'https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php'
+                }
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono pr-20"
+              />
+              {targetUrl && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetUrl('');
+                    setProductName('');
+                    setBrand('');
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              {adapterType === 'demo'
+                ? 'Accepts demo fixture schemes (e.g. demo://iphone-15-pro)'
+                : 'Accepts ANY GSM Arena smartphone review or user opinion URL'}
+            </p>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1.5">
-              Product Name & Brand
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-medium text-slate-300">
+                Product Name & Brand
+              </label>
+              <span className="text-[11px] text-slate-500 font-normal">Optional (auto-derived if empty)</span>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="text"
-                placeholder="Product Name"
-                required
+                placeholder="Product Name (optional)"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
               />
               <input
                 type="text"
-                placeholder="Brand"
+                placeholder="Brand (optional)"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
               />
             </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              If left blank, product metadata will be automatically extracted from the review page.
+            </p>
           </div>
         </div>
 

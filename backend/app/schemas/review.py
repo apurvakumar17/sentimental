@@ -34,7 +34,7 @@ class RawReviewIn(BaseModel):
         trimmed = v.strip()
         if not trimmed:
             return None
-        valid_schemes = ("http://", "https://", "demo://")
+        valid_schemes = ("http://", "https://", "demo://", "gsmarena://")
         if not any(trimmed.lower().startswith(s) for s in valid_schemes):
             raise ValueError(f"Review URL must start with one of: {valid_schemes}")
         return trimmed

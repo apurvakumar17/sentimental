@@ -60,7 +60,7 @@ def execute_scraping_job(
         # Link product if name provided
         default_prod_id = None
         if product_name:
-            prod = get_or_create_product(db, name=product_name, brand=brand)
+            prod = get_or_create_product(db, name=product_name, brand=brand, canonical_url=target_url)
             job.product_id = prod.id
             default_prod_id = prod.id
             db.commit()
@@ -70,7 +70,8 @@ def execute_scraping_job(
 
         meta = {
             "product_name": product_name,
-            "brand": brand
+            "brand": brand,
+            "target_url": target_url
         }
 
         errors = []
@@ -96,6 +97,16 @@ def execute_scraping_job(
                 )
                 job.inserted_reviews += ins
                 job.duplicate_reviews += dups
+
+                # Dynamically link job to product if auto-derived from page content
+                if not job.product_id and batch_reviews:
+                    from backend.app.models.product import Product
+                    first_prod_name = batch_reviews[0].product_name
+                    if first_prod_name:
+                        matched_prod = db.query(Product).filter(Product.name.ilike(first_prod_name.strip())).first()
+                        if matched_prod:
+                            job.product_id = matched_prod.id
+                            default_prod_id = matched_prod.id
             else:
                 job.failed_pages += 1
                 if batch_result["error"]:
