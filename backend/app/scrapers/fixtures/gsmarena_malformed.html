@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head><title>Corrupted Phone Reviews</title></head>
+<body>
+<div class="main">
+  <!-- Valid thread -->
+  <div class="user-thread" id="9999001">
+    <ul class="uinfo2">
+      <li class="uname2">TechReviewer99</li>
+      <li class="upost">12 Jan 2026</li>
+    </ul>
+    <p class="uopin">
+      Outstanding camera performance and bright 120Hz display.
+    </p>
+  </div>
+
+  <!-- Thread with empty review body (should be safely skipped) -->
+  <div class="user-thread" id="9999002">
+    <ul class="uinfo2">
+      <li class="uname2">EmptyUser</li>
+      <li class="upost">10 Jan 2026</li>
+    </ul>
+    <p class="uopin">
+      <span class="uinreply">quoted text</span>
+      <!-- no actual opinion text -->
+    </p>
+  </div>
+
+  <!-- Thread with missing ID and missing author (should be handled safely with fallback defaults) -->
+  <div class="user-thread">
+    <ul class="uinfo2">
+      <!-- No uname -->
+      <li class="upost">01 Jan 2026</li>
+    </ul>
+    <p class="uopin">
+      Decent battery life but charges somewhat slowly.
+    </p>
+  </div>
+
+  <!-- Malformed element without p.uopin (should not crash parser) -->
+  <div class="user-thread" id="9999004">
+    <span>Malformed block without opinion tag</span>
+  </div>
+</div>
+</body>
+</html>

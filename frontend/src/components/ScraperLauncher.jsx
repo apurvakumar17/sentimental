@@ -1,0 +1,292 @@
+import React, { useState } from 'react';
+import { Play, ShieldCheck, Clock, Layers, AlertCircle, Globe, Cpu } from 'lucide-react';
+import { api } from '../api/client';
+
+const DEMO_PRESETS = [
+  { name: 'Apple iPhone 15 Pro', brand: 'Apple', url: 'demo://iphone-15-pro' },
+  { name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', url: 'demo://galaxy-s24-ultra' },
+  { name: 'Google Pixel 8 Pro', brand: 'Google', url: 'demo://pixel-8-pro' },
+];
+
+const GSMARENA_PRESETS = [
+  { name: 'Apple iPhone 15 Pro', brand: 'Apple', url: 'https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php' },
+  { name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', url: 'https://www.gsmarena.com/samsung_galaxy_s24_ultra-reviews-12771.php' },
+  { name: 'Google Pixel 8 Pro', brand: 'Google', url: 'https://www.gsmarena.com/google_pixel_8_pro-reviews-12540.php' },
+];
+
+export default function ScraperLauncher({ onJobLaunched }) {
+  const [adapterType, setAdapterType] = useState('demo'); // 'demo' | 'gsmarena'
+  const [targetUrl, setTargetUrl] = useState(DEMO_PRESETS[0].url);
+  const [productName, setProductName] = useState(DEMO_PRESETS[0].name);
+  const [brand, setBrand] = useState(DEMO_PRESETS[0].brand);
+  const [maxPages, setMaxPages] = useState(2);
+  const [maxReviews, setMaxReviews] = useState('20');
+  const [delaySeconds, setDelaySeconds] = useState(1.0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleAdapterChange = (type) => {
+    setAdapterType(type);
+    const defaultPreset = type === 'demo' ? DEMO_PRESETS[0] : GSMARENA_PRESETS[0];
+    setTargetUrl(defaultPreset.url);
+    setProductName(defaultPreset.name);
+    setBrand(defaultPreset.brand);
+  };
+
+  const handleSelectPreset = (preset) => {
+    setTargetUrl(preset.url);
+    setProductName(preset.name);
+    setBrand(preset.brand);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        target_url: targetUrl,
+        scraper_type: adapterType,
+        product_name: productName,
+        brand: brand,
+        max_pages: parseInt(maxPages, 10),
+        max_reviews: maxReviews ? parseInt(maxReviews, 10) : null,
+        delay_seconds: parseFloat(delaySeconds),
+      };
+
+      const res = await api.triggerScrape(payload);
+      if (onJobLaunched) {
+        onJobLaunched(res);
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to dispatch scraping job');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const currentPresets = adapterType === 'demo' ? DEMO_PRESETS : GSMARENA_PRESETS;
+
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+        <div>
+          <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+            <span>Dispatch Scraping Job</span>
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Collect smartphone reviews with polite delays, limits, and 3-tier deduplication
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="flex items-center space-x-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full font-medium">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Ethical Scraper Policy</span>
+          </span>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-4 p-3.5 rounded-xl bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs flex items-center space-x-2">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Source Adapter Selector */}
+      <div className="mt-5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">
+          Select Review Source Adapter
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => handleAdapterChange('demo')}
+            className={`p-3.5 rounded-xl border text-left transition-all flex items-start space-x-3 ${
+              adapterType === 'demo'
+                ? 'border-indigo-500 bg-indigo-950/40 text-white shadow-lg shadow-indigo-500/10'
+                : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+            }`}
+          >
+            <div className="p-2 rounded-lg bg-indigo-900/40 border border-indigo-700/50 mt-0.5">
+              <Cpu className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div>
+              <div className="font-semibold text-sm">Demo / Local Fixture</div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                Deterministic HTML fixtures for offline testing & viva demonstrations
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleAdapterChange('gsmarena')}
+            className={`p-3.5 rounded-xl border text-left transition-all flex items-start space-x-3 ${
+              adapterType === 'gsmarena'
+                ? 'border-emerald-500 bg-emerald-950/40 text-white shadow-lg shadow-emerald-500/10'
+                : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+            }`}
+          >
+            <div className="p-2 rounded-lg bg-emerald-900/40 border border-emerald-700/50 mt-0.5">
+              <Globe className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <div className="font-semibold text-sm flex items-center space-x-1.5">
+                <span>GSM Arena</span>
+                <span className="text-[10px] bg-emerald-900/60 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-700/50">
+                  Public Source
+                </span>
+              </div>
+              <div className="text-xs text-slate-400 mt-0.5">
+                Live user opinions from gsmarena.com (No login/CAPTCHA required)
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Presets */}
+      <div className="mt-5">
+        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">
+          Target Smartphone Presets
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          {currentPresets.map((preset) => {
+            const isSelected = targetUrl === preset.url;
+            return (
+              <button
+                key={preset.url}
+                type="button"
+                onClick={() => handleSelectPreset(preset)}
+                className={`p-3 rounded-xl border text-left transition-all ${
+                  isSelected
+                    ? 'border-indigo-500 bg-indigo-950/40 text-white shadow-md shadow-indigo-500/10'
+                    : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                }`}
+              >
+                <div className="font-medium text-sm truncate">{preset.name}</div>
+                <div className="text-xs text-slate-400 flex items-center justify-between mt-1">
+                  <span>{preset.brand}</span>
+                  <span className="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
+                    {adapterType === 'demo' ? 'Fixture' : 'GSM Arena'}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-medium text-slate-300 block mb-1.5">
+              Target Source URL
+            </label>
+            <input
+              type="text"
+              required
+              value={targetUrl}
+              onChange={(e) => setTargetUrl(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-300 block mb-1.5">
+              Product Name & Brand
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder="Product Name"
+                required
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              />
+              <input
+                type="text"
+                placeholder="Brand"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-medium text-slate-300 flex items-center space-x-1.5">
+                <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Max Pages</span>
+              </label>
+              <span className="text-xs font-bold text-indigo-400 font-mono">{maxPages} pages</span>
+            </div>
+            <input
+              type="range"
+              min="1"
+              max="5"
+              step="1"
+              value={maxPages}
+              onChange={(e) => setMaxPages(e.target.value)}
+              className="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-medium text-slate-300 flex items-center space-x-1.5">
+                <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Inter-Page Delay</span>
+              </label>
+              <span className="text-xs font-bold text-indigo-400 font-mono">{delaySeconds}s</span>
+            </div>
+            <input
+              type="range"
+              min="0.5"
+              max="3.0"
+              step="0.5"
+              value={delaySeconds}
+              onChange={(e) => setDelaySeconds(e.target.value)}
+              className="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-300 block mb-1.5">
+              Max Reviews Cap
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="200"
+              placeholder="e.g. 20 (empty = unlimited)"
+              value={maxReviews}
+              onChange={(e) => setMaxReviews(e.target.value)}
+              className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+            />
+          </div>
+        </div>
+
+        <div className="pt-3 flex items-center justify-between">
+          <div className="text-[11px] text-slate-400 hidden sm:block">
+            * 3-Tier Deduplication: Source Review ID → Review Permalink URL → Deterministic SHA256(Product + Source + Content)
+          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/20 transition-all duration-200 disabled:opacity-50 ml-auto"
+          >
+            <Play className={`w-4 h-4 fill-current ${isSubmitting ? 'animate-spin' : ''}`} />
+            <span>{isSubmitting ? 'Dispatching...' : 'Start Scrape Job'}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
