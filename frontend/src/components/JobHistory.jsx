@@ -68,7 +68,10 @@ export default function JobHistory({ jobs, onSelectJob }) {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-center font-mono text-slate-300">
-                    {job.successful_pages}/{job.pages_attempted}
+                    <div>{job.successful_pages}/{job.pages_attempted}</div>
+                    <div className="text-[10px] text-slate-400 font-sans">
+                      {job.max_pages ? `Cap: ${job.max_pages}` : 'Unlimited'}
+                    </div>
                   </td>
                   <td className="py-3 px-4 text-center font-mono text-indigo-300 font-bold">
                     {job.reviews_discovered}

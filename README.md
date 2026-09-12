@@ -4,7 +4,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB.svg)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC.svg)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-45%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-54%20Passing-brightgreen.svg)]()
 
 > **SmartReview** is an Aspect-Based Sentiment Analysis and Product Recommendation System for Smartphone Reviews.
 > This repository contains the hardened, academically defensible implementation of **Module 1**: "Smartphone Review Data Collection and Web Scraping System".

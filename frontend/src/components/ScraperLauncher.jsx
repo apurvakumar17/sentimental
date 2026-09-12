@@ -19,7 +19,8 @@ export default function ScraperLauncher({ onJobLaunched }) {
   const [targetUrl, setTargetUrl] = useState(DEMO_PRESETS[0].url);
   const [productName, setProductName] = useState(DEMO_PRESETS[0].name);
   const [brand, setBrand] = useState(DEMO_PRESETS[0].brand);
-  const [maxPages, setMaxPages] = useState(2);
+  const [pageMode, setPageMode] = useState('limited'); // 'limited' | 'unlimited'
+  const [maxPages, setMaxPages] = useState('5'); // Default: 5
   const [maxReviews, setMaxReviews] = useState('20');
   const [delaySeconds, setDelaySeconds] = useState(1.0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,12 +46,22 @@ export default function ScraperLauncher({ onJobLaunched }) {
     setIsSubmitting(true);
 
     try {
+      let parsedMaxPages = null;
+      if (pageMode === 'limited') {
+        parsedMaxPages = parseInt(maxPages, 10);
+        if (isNaN(parsedMaxPages) || parsedMaxPages < 1) {
+          setError('Max Pages must be a positive integer (>= 1)');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const payload = {
         target_url: targetUrl.trim(),
         scraper_type: adapterType,
         product_name: productName.trim() || null,
         brand: brand.trim() || null,
-        max_pages: parseInt(maxPages, 10),
+        max_pages: parsedMaxPages,
         max_reviews: maxReviews ? parseInt(maxReviews, 10) : null,
         delay_seconds: parseFloat(delaySeconds),
       };
@@ -269,17 +280,69 @@ export default function ScraperLauncher({ onJobLaunched }) {
                 <Layers className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Max Pages</span>
               </label>
-              <span className="text-xs font-bold text-indigo-400 font-mono">{maxPages} pages</span>
+              <div className="flex items-center space-x-1">
+                <button
+                  type="button"
+                  onClick={() => setPageMode('limited')}
+                  className={`text-[10px] px-2 py-0.5 rounded transition-all ${
+                    pageMode === 'limited'
+                      ? 'bg-indigo-600 text-white font-bold'
+                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Limited
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPageMode('unlimited')}
+                  className={`text-[10px] px-2 py-0.5 rounded transition-all ${
+                    pageMode === 'unlimited'
+                      ? 'bg-purple-600 text-white font-bold shadow-sm shadow-purple-500/20'
+                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  ∞ Unlimited
+                </button>
+              </div>
             </div>
-            <input
-              type="range"
-              min="1"
-              max="5"
-              step="1"
-              value={maxPages}
-              onChange={(e) => setMaxPages(e.target.value)}
-              className="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2"
-            />
+
+            {pageMode === 'limited' ? (
+              <div>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  placeholder="e.g. 10, 20, 50, 100"
+                  value={maxPages}
+                  onChange={(e) => setMaxPages(e.target.value)}
+                  className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+                />
+                <div className="flex items-center space-x-1 mt-1.5">
+                  {[5, 10, 25, 50, 100].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setMaxPages(String(num))}
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                        maxPages === String(num)
+                          ? 'bg-indigo-900/60 border border-indigo-600 text-indigo-200'
+                          : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-slate-300'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="p-2.5 rounded-lg bg-purple-950/30 border border-purple-800/40 text-[11px] text-purple-300">
+                <span className="font-semibold block">Unlimited Mode Active</span>
+                <span className="text-slate-400 text-[10px]">
+                  Crawls until no next page, loop detected, or empty page.
+                </span>
+              </div>
+            )}
           </div>
 
           <div>

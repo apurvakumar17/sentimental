@@ -255,3 +255,35 @@ def test_gsmarena_custom_phone_job_auto_links_product(db_session):
     assert updated_job_2.product_id == derived_product.id  # Reused same product
     assert updated_job_2.inserted_reviews == 0
     assert updated_job_2.duplicate_reviews == 3
+
+def test_gsmarena_has_next_page_pagination_detection():
+    """
+    Verifies that GSMArenaReviewScraper accurately detects next pages across:
+    - User opinion pagination widget (#nav-review-page-temp with span.count of N)
+    - Forward gallery arrow icons
+    - Editorial review 'next-page' anchors
+    - Terminal / disabled states
+    """
+    scraper = GSMArenaReviewScraper()
+
+    # 1. Sample fixture has 'of 18' pages
+    sample_html = scraper.fetch_page_content("gsmarena://sample", 1)
+    assert scraper.has_next_page(sample_html, 1) is True
+    assert scraper.has_next_page(sample_html, 18) is False
+
+    # 2. Editorial next page button
+    editorial_html = '<div><a class="next-page" href="phone-review-123p2.php">Next Page</a></div>'
+    assert scraper.has_next_page(editorial_html, 1) is True
+
+    # 3. Arrow icon button
+    arrow_html = '<div id="nav-review-page-temp"><a class="prevnextbutton" href="phone-reviews-123p2.php"><i class="head-icon icon-gallery-arrow-right"></i></a></div>'
+    assert scraper.has_next_page(arrow_html, 1) is True
+
+    # 4. Arrow icon disabled (last page)
+    arrow_disabled = '<div id="nav-review-page-temp"><a class="prevnextbutton disabled" href="#"><i class="head-icon icon-gallery-arrow-right"></i></a></div>'
+    assert scraper.has_next_page(arrow_disabled, 1) is False
+
+    # 5. Single-page fixture without pagination
+    fixture_a_html = scraper.fetch_page_content("gsmarena://fixture-a", 1)
+    assert scraper.has_next_page(fixture_a_html, 1) is False
+

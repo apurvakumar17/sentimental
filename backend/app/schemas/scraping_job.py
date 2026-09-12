@@ -7,8 +7,8 @@ class ScrapingJobCreate(BaseModel):
     scraper_type: str = Field(default="demo", description="Registered scraper adapter key")
     product_name: Optional[str] = None
     brand: Optional[str] = None
-    max_pages: int = Field(default=3, ge=1, le=50, description="Max pages to scrape (1-50)")
-    max_reviews: Optional[int] = Field(default=None, ge=1, le=1000, description="Optional cap on total reviews (1-1000)")
+    max_pages: Optional[int] = Field(default=5, ge=1, description="Max pages to scrape (>= 1, or None/null for unlimited)")
+    max_reviews: Optional[int] = Field(default=None, ge=1, le=5000, description="Optional cap on total reviews (1-5000)")
     delay_seconds: float = Field(default=1.0, ge=0.0, le=10.0, description="Polite inter-page delay in seconds (0-10)")
 
     @field_validator("target_url")
@@ -38,7 +38,7 @@ class ScrapingJobResponse(BaseModel):
     product_id: Optional[int] = None
     product_name: Optional[str] = None
     status: str
-    max_pages: int = 3
+    max_pages: Optional[int] = None
     max_reviews: Optional[int] = None
     pages_attempted: int
     successful_pages: int

@@ -76,7 +76,18 @@ export default function JobTracker({ initialJob, onJobCompleted }) {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
         <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-          <span className="text-xs text-slate-400">Pages Processed</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400">Pages Processed</span>
+            {job.max_pages === null || job.max_pages === undefined ? (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-950/80 border border-purple-800/60 text-purple-300 font-mono">
+                Unlimited
+              </span>
+            ) : (
+              <span className="text-[10px] text-slate-400 font-mono">
+                Cap: {job.max_pages}
+              </span>
+            )}
+          </div>
           <p className="text-xl font-bold text-white mt-1 font-mono">
             {job.successful_pages} <span className="text-xs text-slate-400">/ {job.pages_attempted}</span>
           </p>

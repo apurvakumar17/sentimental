@@ -14,7 +14,7 @@ class ScrapingJob(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=True)
     status = Column(String(20), nullable=False, default="PENDING")  # PENDING, RUNNING, COMPLETED, FAILED
 
-    max_pages = Column(Integer, default=3, nullable=False)
+    max_pages = Column(Integer, nullable=True)
     max_reviews = Column(Integer, nullable=True)
 
     pages_attempted = Column(Integer, default=0, nullable=False)

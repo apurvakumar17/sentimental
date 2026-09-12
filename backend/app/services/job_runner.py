@@ -25,7 +25,7 @@ def execute_scraping_job(
     scraper_type: str,
     product_name: Optional[str] = None,
     brand: Optional[str] = None,
-    max_pages: int = 3,
+    max_pages: Optional[int] = 5,
     max_reviews: Optional[int] = None,
     delay_seconds: float = 1.0,
     db_session: Optional[Session] = None

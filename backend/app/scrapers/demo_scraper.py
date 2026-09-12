@@ -242,6 +242,18 @@ class DemoReviewScraper(BaseReviewScraper):
         phone = self._resolve_phone_data(url, {})
         return generate_mock_html(phone, page_num)
 
+    def has_next_page(self, html_content: str, current_page: int) -> bool:
+        """Checks if mock HTML has subsequent review pages."""
+        soup = BeautifulSoup(html_content, "html.parser")
+        pagination = soup.find("div", class_="pagination")
+        if pagination:
+            try:
+                total_pages = int(pagination.get("data-total-pages", 1))
+                return current_page < total_pages
+            except (ValueError, TypeError):
+                pass
+        return False
+
     def parse_page(self, html_content: str, metadata: Dict[str, Any]) -> List[RawReviewIn]:
         """
         Parses HTML using BeautifulSoup with standard CSS selectors.

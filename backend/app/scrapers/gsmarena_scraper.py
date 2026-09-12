@@ -135,6 +135,70 @@ class GSMArenaReviewScraper(BaseReviewScraper):
         response.raise_for_status()
         return response.text
 
+    def has_next_page(self, html_content: str, current_page: int) -> bool:
+        """
+        Determines whether there is a subsequent page on GSM Arena:
+        1. Checks pagination widget <div class="page"><span class="count">of N</span></div>:
+           If total pages N is found, returns current_page < N.
+        2. Checks for forward navigation buttons:
+           - User opinions: <a class="prevnextbutton" href="..."><i class="...icon-gallery-arrow-right"></i></a>
+             (checks that it is not marked with class="disabled" or href="#")
+           - Editorial reviews: <a class="next-page" href="...">Next Page</a>
+        3. Checks for direct links targeting p{current_page + 1}.php or page={current_page + 1}.
+        4. Fallbacks: "Next page" title, or anchor text in (>>, Next, Next >, »).
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # 1. Total page count in pagination widget: <div class="page"><span class="count">of 217</span></div>
+        page_div = soup.find("div", class_="page")
+        if page_div:
+            count_elem = page_div.find(class_="count") or page_div
+            text = count_elem.get_text(strip=True)
+            m = re.search(r"of\s*(\d+)", text, re.I)
+            if m:
+                total_pages = int(m.group(1))
+                return current_page < total_pages
+
+        # 2. Check for forward arrow anchor: e.g. <a class="prevnextbutton" href="...p2.php"><i class="...icon-gallery-arrow-right"></i></a>
+        for a in soup.find_all("a"):
+            classes = a.get("class") or []
+            if "disabled" in classes:
+                continue
+            href = a.get("href", "")
+            if not href or href == "#":
+                continue
+
+            # Right arrow icon inside anchor
+            if a.find(class_=lambda c: c and ("arrow-right" in str(c) or "icon-next" in str(c))):
+                return True
+
+            # Editorial next page button
+            if "next-page" in classes or "pages-next" in classes:
+                return True
+
+        # 3. Explicit link to current_page + 1: e.g. p2.php or page=2
+        expected_p = f"p{current_page + 1}.php"
+        expected_page = f"page={current_page + 1}"
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            if expected_p in href or expected_page in href:
+                return True
+
+        # 4. Standard Next text or title attributes
+        for a in soup.find_all("a", href=True):
+            classes = a.get("class") or []
+            if "disabled" in classes:
+                continue
+            href = a["href"]
+            if href == "#":
+                continue
+            txt = a.get_text(strip=True).lower()
+            title = a.get("title", "").lower()
+            if txt in (">>", "next", "next >", "»") or "next page" in title:
+                return True
+
+        return False
+
     def parse_page(self, html_content: str, metadata: Dict[str, Any]) -> List[RawReviewIn]:
         """
         Parses GSM Arena HTML user opinions with BeautifulSoup:

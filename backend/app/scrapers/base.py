@@ -109,16 +109,41 @@ class BaseReviewScraper(ABC):
         """Extract structured RawReviewIn objects from HTML."""
         pass
 
+    def build_page_url(self, base_url: str, page_num: int) -> str:
+        """
+        Builds the canonical URL for a specific page number.
+        Default implementation appends a query parameter or returns base URL for page 1.
+        Subclasses should override with site-specific URL patterns.
+        """
+        if page_num <= 1:
+            return base_url
+        separator = "&" if "?" in base_url else "?"
+        return f"{base_url}{separator}page={page_num}"
+
+    def has_next_page(self, html_content: str, current_page: int) -> bool:
+        """
+        Determines whether pagination should continue to subsequent pages.
+        Default implementation returns True; subclasses override with source-specific checks.
+        """
+        return True
+
     def scrape(
         self,
         target_url: str,
-        max_pages: int = 3,
+        max_pages: Optional[int] = 5,
         max_reviews: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> Generator[Dict[str, Any], None, None]:
         """
         Orchestrates scraping across pages, yielding status dicts with batch reviews.
-        Strictly respects max_pages and max_reviews limits.
+        Supports both limited (max_pages = N) and unlimited (max_pages = None) pagination.
+        Enforces strict termination conditions:
+          - Limited mode ceiling (page > max_pages)
+          - Pagination loop detection (visited_urls)
+          - Empty response body or empty review collection
+          - No next page indication (has_next_page)
+          - Max reviews cap hit (max_reviews)
+          - HTTP/resource failures (404, 403, 429, 5xx)
         """
         if not self.validate_url(target_url):
             raise ValueError(f"URL '{target_url}' is not supported by {self.__class__.__name__}")
@@ -128,22 +153,46 @@ class BaseReviewScraper(ABC):
             raise PermissionError(f"Target URL '{target_url}' is disallowed by robots.txt")
 
         meta = metadata or {}
-        # Bound max pages by settings
-        pages_to_scrape = max(1, min(max_pages, settings.DEFAULT_MAX_PAGES * 2))
-
+        visited_urls = set()
         total_collected = 0
+        page = 1
 
-        for page in range(1, pages_to_scrape + 1):
+        while True:
+            # Check limited mode cutoff
+            if max_pages is not None and page > max_pages:
+                logger.info(f"Reached configured max_pages limit ({max_pages}). Terminating crawl.")
+                break
+
+            # Build URL for this page
+            page_url = self.build_page_url(target_url, page)
+
+            # Condition B: Pagination loop detection
+            if page_url in visited_urls:
+                logger.warning(f"Pagination loop detected: '{page_url}' was already visited. Terminating crawl.")
+                break
+            visited_urls.add(page_url)
+
             if page > 1:
                 self.wait_polite()
 
             try:
                 html = self.fetch_page_content(target_url, page)
+
+                # Check for empty response body
+                if not html or not html.strip():
+                    logger.info(f"Page {page} returned empty content. Terminating crawl.")
+                    break
+
                 reviews = self.parse_page(html, meta)
 
-                # Check max_reviews cap
+                # Condition D: Empty page (no reviews discovered)
+                if not reviews:
+                    logger.info(f"Page {page} yielded zero review items. Terminating crawl.")
+                    break
+
+                # Respect independent max_reviews cap
                 if max_reviews is not None and (total_collected + len(reviews)) > max_reviews:
-                    allowed = max_reviews - total_collected
+                    allowed = max(0, max_reviews - total_collected)
                     reviews = reviews[:allowed]
 
                 total_collected += len(reviews)
@@ -155,8 +204,14 @@ class BaseReviewScraper(ABC):
                     "error": None
                 }
 
+                # Terminate early if max_reviews reached
                 if max_reviews is not None and total_collected >= max_reviews:
                     logger.info(f"Reached max_reviews limit ({max_reviews}). Terminating crawl early.")
+                    break
+
+                # Condition A: Check if page structure indicates there is no next page
+                if not self.has_next_page(html, page):
+                    logger.info(f"No next page indicated on page {page}. Terminating crawl.")
                     break
 
             except Exception as e:
@@ -167,3 +222,8 @@ class BaseReviewScraper(ABC):
                     "reviews": [],
                     "error": str(e)
                 }
+                # In unlimited mode, unhandled fatal fetch errors terminate pagination
+                if max_pages is None:
+                    break
+
+            page += 1
