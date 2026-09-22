@@ -1,0 +1,18 @@
+services:
+  smartreview:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smartreview_app
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Persist SQLite database across container restarts
+      - smartreview_data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  smartreview_data:
