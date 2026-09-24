@@ -1,25 +1,73 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-canvas: #030c0e;
+  --color-deep: #092328;
+  --color-teal: #12544F;
+  --color-green: #2A835F;
+  --color-light-green: #8BBB92;
+
+  --color-background: #030c0e;
+  --color-surface: #071c20;
+  --color-surface-elevated: #0d2f34;
+  --color-surface-card: #082126;
+  --color-primary: #2A835F;
+  --color-primary-hover: #329b71;
+  --color-secondary: #12544F;
+  --color-secondary-hover: #196b65;
+  --color-accent: #8BBB92;
+  --color-border: #12544F;
+  --color-border-subtle: #0c383e;
+  --color-text-primary: #f2fbf6;
+  --color-text-secondary: #8BBB92;
+  --color-text-muted: #6ba08f;
+  --color-text-on-primary: #ffffff;
+}
+
+:root {
+  --color-canvas: #030c0e;
+  --color-deep: #092328;
+  --color-teal: #12544F;
+  --color-green: #2A835F;
+  --color-light-green: #8BBB92;
+
+  --color-background: #030c0e;
+  --color-surface: #071c20;
+  --color-surface-elevated: #0d2f34;
+  --color-surface-card: #082126;
+  --color-primary: #2A835F;
+  --color-primary-hover: #329b71;
+  --color-secondary: #12544F;
+  --color-secondary-hover: #196b65;
+  --color-accent: #8BBB92;
+  --color-border: #12544F;
+  --color-border-subtle: #0c383e;
+  --color-text-primary: #f2fbf6;
+  --color-text-secondary: #8BBB92;
+  --color-text-muted: #6ba08f;
+  --color-text-on-primary: #ffffff;
+}
+
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: #030c0e;
+  color: #f2fbf6;
   min-height: 100vh;
 }
 
-/* Custom subtle scrollbar */
+/* Custom subtle scrollbar with brand palette */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #030c0e;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #12544F;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #2A835F;
 }

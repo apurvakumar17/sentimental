@@ -4,27 +4,27 @@ import { Clock, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 export default function JobHistory({ jobs, onSelectJob }) {
   if (!jobs || jobs.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center backdrop-blur-md">
-        <Clock className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-        <p className="text-slate-400 text-sm">No scraping jobs recorded yet</p>
+      <div className="rounded-2xl border border-[#12544F]/40 bg-[#071b1f]/50 p-8 text-center backdrop-blur-md">
+        <Clock className="w-8 h-8 text-[#649182] mx-auto mb-2" />
+        <p className="text-[#649182] text-sm">No scraping jobs recorded yet</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden backdrop-blur-xl shadow-2xl">
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+    <div className="rounded-2xl border border-[#12544F]/60 bg-[#071b1f]/95 overflow-hidden backdrop-blur-xl shadow-2xl">
+      <div className="p-4 border-b border-[#12544F]/50 flex items-center justify-between">
         <h3 className="text-sm font-bold text-white uppercase tracking-wider">
           Scraping Job Execution Logs
         </h3>
-        <span className="text-xs text-slate-400 font-mono">
+        <span className="text-xs text-[#8BBB92]  ">
           {jobs.length} total runs
         </span>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="bg-slate-950/80 text-slate-400 border-b border-slate-800">
+          <thead className="bg-[#030c0e]/95 text-[#8BBB92] border-b border-[#12544F]/50">
             <tr>
               <th className="py-3 px-4 font-semibold">Job ID</th>
               <th className="py-3 px-4 font-semibold">Target & Product</th>
@@ -36,29 +36,29 @@ export default function JobHistory({ jobs, onSelectJob }) {
               <th className="py-3 px-4 font-semibold">Timestamp</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-[#12544F]/25">
             {jobs.map((job) => {
               const statusBadge = {
-                COMPLETED: 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60',
-                RUNNING: 'bg-indigo-950/60 text-indigo-400 border-indigo-800/60 animate-pulse',
-                PENDING: 'bg-amber-950/60 text-amber-400 border-amber-800/60',
-                FAILED: 'bg-rose-950/60 text-rose-400 border-rose-800/60',
-              }[job.status] || 'bg-slate-800 text-slate-300';
+                COMPLETED: 'bg-[#2A835F]/25 text-[#8BBB92] border-[#2A835F]/60',
+                RUNNING: 'bg-[#12544F]/80 text-[#8BBB92] border-[#2A835F] animate-pulse',
+                PENDING: 'bg-amber-950/70 text-amber-300 border-amber-700/60',
+                FAILED: 'bg-rose-950/70 text-rose-300 border-rose-700/60',
+              }[job.status] || 'bg-[#12544F]/40 text-[#7ea698] border-[#12544F]/50';
 
               return (
                 <tr
                   key={job.id}
                   onClick={() => onSelectJob && onSelectJob(job)}
-                  className="hover:bg-slate-800/40 cursor-pointer transition-colors"
+                  className="hover:bg-[#12544F]/20 cursor-pointer transition-colors"
                 >
-                  <td className="py-3 px-4 font-mono text-indigo-400">
+                  <td className="py-3 px-4   text-[#8BBB92]">
                     {job.job_id.slice(0, 8)}
                   </td>
                   <td className="py-3 px-4">
-                    <div className="font-medium text-slate-200 truncate max-w-[200px]">
+                    <div className="font-medium text-[#f2fbf6] truncate max-w-[200px]">
                       {job.product_name || job.target_url}
                     </div>
-                    <div className="text-[10px] text-slate-400 truncate max-w-[200px] font-mono">
+                    <div className="text-[10px] text-[#649182] truncate max-w-[200px]  ">
                       {job.target_url}
                     </div>
                   </td>
@@ -67,22 +67,22 @@ export default function JobHistory({ jobs, onSelectJob }) {
                       {job.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-center font-mono text-slate-300">
+                  <td className="py-3 px-4 text-center   text-[#f2fbf6]">
                     <div>{job.successful_pages}/{job.pages_attempted}</div>
-                    <div className="text-[10px] text-slate-400 font-sans">
+                    <div className="text-[10px] text-[#649182] font-sans">
                       {job.max_pages ? `Cap: ${job.max_pages}` : 'Unlimited'}
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-center font-mono text-indigo-300 font-bold">
+                  <td className="py-3 px-4 text-center   text-[#8BBB92] font-bold">
                     {job.reviews_discovered}
                   </td>
-                  <td className="py-3 px-4 text-center font-mono text-emerald-400 font-bold">
+                  <td className="py-3 px-4 text-center   text-[#8BBB92] font-bold">
                     {job.inserted_reviews}
                   </td>
-                  <td className="py-3 px-4 text-center font-mono text-amber-400 font-bold">
+                  <td className="py-3 px-4 text-center   text-amber-300 font-bold">
                     {job.duplicate_reviews}
                   </td>
-                  <td className="py-3 px-4 text-slate-400 whitespace-nowrap">
+                  <td className="py-3 px-4 text-[#649182] whitespace-nowrap">
                     {new Date(job.created_at).toLocaleString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}
                   </td>
                 </tr>

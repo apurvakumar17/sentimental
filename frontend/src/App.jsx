@@ -71,7 +71,7 @@ export default function App() {
   const totalDuplicates = jobs.reduce((acc, j) => acc + (j.duplicate_reviews || 0), 0);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-[#030c0e] text-[#f2fbf6] flex flex-col selection:bg-[#2A835F] selection:text-white">
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -82,21 +82,21 @@ export default function App() {
             value={totalReviews}
             subtitle="Validated & Deduplicated"
             icon={Database}
-            color="indigo"
+            color="teal"
           />
           <StatCard
             title="Monitored Devices"
             value={products.length}
             subtitle="Smartphone Catalog"
             icon={Smartphone}
-            color="purple"
+            color="green"
           />
           <StatCard
             title="Scraper Jobs"
             value={jobs.length}
             subtitle="Background Tasks"
             icon={Cpu}
-            color="emerald"
+            color="lightGreen"
           />
           <StatCard
             title="Duplicates Filtered"
@@ -109,27 +109,27 @@ export default function App() {
 
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            <div className="relative overflow-hidden rounded-2xl border border-indigo-500/25 bg-gradient-to-r from-slate-900/90 via-indigo-950/40 to-slate-900/90 p-6 sm:p-7 backdrop-blur-xl shadow-xl">
+            <div className="relative overflow-hidden rounded-2xl border border-[#12544F]/60 bg-gradient-to-r from-[#071b1f] via-[#0d2a2e] to-[#071b1f] p-6 sm:p-7 backdrop-blur-xl shadow-2xl">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="space-y-1.5 max-w-2xl">
                   <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                     Smartphone Review Data Collection
                   </h1>
-                  <p className="text-sm text-slate-400 leading-relaxed">
+                  <p className="text-sm text-[#7ea698] leading-relaxed">
                     Automated review scraping with 3-tier deduplication, polite rate-limiting, and SQLite persistence.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <button
                     onClick={() => setActiveTab('scraper')}
-                    className="group inline-flex items-center space-x-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="group inline-flex items-center space-x-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#2A835F] via-[#2A835F] to-[#12544F] hover:from-[#329b71] hover:to-[#186a64] text-white font-bold text-sm shadow-xl shadow-[#2A835F]/25 hover:shadow-[#2A835F]/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                   >
                     <span>Launch New Scraper Job</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
                   <button
                     onClick={() => setActiveTab('reviews')}
-                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 font-semibold text-xs transition-colors"
+                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-[#030c0e] border border-[#12544F]/70 hover:bg-[#12544F]/40 hover:text-white text-[#8BBB92] font-semibold text-xs transition-colors"
                   >
                     <span>Browse Reviews</span>
                   </button>
@@ -138,20 +138,20 @@ export default function App() {
             </div>
 
             {/* Smartphone Catalog Summary */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-2xl">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div className="rounded-2xl border border-[#12544F]/60 bg-[#071b1f]/90 p-6 backdrop-blur-xl shadow-2xl">
+              <div className="flex items-center justify-between pb-4 border-b border-[#12544F]/50">
                 <h3 className="text-base font-bold text-white flex items-center space-x-2">
-                  <Smartphone className="w-4 h-4 text-indigo-400" />
+                  <Smartphone className="w-4 h-4 text-[#8BBB92]" />
                   <span>Active Smartphone Catalog</span>
                 </h3>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-[#8BBB92] font-medium">
                   {products.length} Products
                 </span>
               </div>
 
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                  <thead className="bg-[#030c0e]/95 text-[#8BBB92] border-b border-[#12544F]/50">
                     <tr>
                       <th className="py-2.5 px-4 font-semibold">Device Model</th>
                       <th className="py-2.5 px-4 font-semibold">Brand</th>
@@ -160,25 +160,25 @@ export default function App() {
                       <th className="py-2.5 px-4 font-semibold text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-[#12544F]/25">
                     {products.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
+                      <tr key={p.id} className="hover:bg-[#12544F]/20 transition-colors">
                         <td className="py-3 px-4 font-medium text-white">{p.name}</td>
-                        <td className="py-3 px-4 text-slate-400">{p.brand || '—'}</td>
-                        <td className="py-3 px-4 text-center font-mono font-bold text-indigo-400">
+                        <td className="py-3 px-4 text-[#7ea698]">{p.brand || '—'}</td>
+                        <td className="py-3 px-4 text-center font-mono font-bold text-[#8BBB92]">
                           {p.review_count}
                         </td>
                         <td className="py-3 px-4 text-center font-mono">
                           {p.average_rating ? (
                             <span className="text-amber-400 font-semibold">★ {p.average_rating}</span>
                           ) : (
-                            <span className="text-slate-400">—</span>
+                            <span className="text-[#649182]">—</span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setActiveTab('reviews')}
-                            className="text-xs text-indigo-400 hover:text-indigo-300 font-medium"
+                            className="text-xs text-[#8BBB92] hover:text-white font-medium hover:underline transition-colors"
                           >
                             Explore
                           </button>
@@ -220,7 +220,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-400">
+      <footer className="border-t border-[#12544F]/40 bg-[#030c0e] py-6 text-center text-xs text-[#649182]">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>SmartReview — Aspect-Based Sentiment Analysis & Recommendation System</span>
         </div>

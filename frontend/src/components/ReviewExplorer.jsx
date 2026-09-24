@@ -46,17 +46,17 @@ export default function ReviewExplorer({ products }) {
   return (
     <div className="space-y-5">
       {/* Search & Filter Header */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-xl shadow-2xl">
+      <div className="rounded-2xl border border-[#12544F]/60 bg-[#071b1f]/95 p-5 backdrop-blur-xl shadow-2xl">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
           {/* Keyword Search */}
           <div className="sm:col-span-6 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#8BBB92] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search keyword in reviews, titles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#030c0e] border border-[#12544F]/70 rounded-xl text-sm text-[#f2fbf6] placeholder-[#649182] focus:outline-none focus:border-[#2A835F] focus:ring-1 focus:ring-[#2A835F] transition-colors"
             />
           </div>
 
@@ -68,7 +68,7 @@ export default function ReviewExplorer({ products }) {
                 setSelectedProduct(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2.5 bg-[#030c0e] border border-[#12544F]/70 rounded-xl text-sm text-[#f2fbf6] focus:outline-none focus:border-[#2A835F] focus:ring-1 focus:ring-[#2A835F] transition-colors"
             >
               <option value="">All Smartphone Models</option>
               {products?.map((p) => (
@@ -87,7 +87,7 @@ export default function ReviewExplorer({ products }) {
                 setMinRating(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2.5 bg-[#030c0e] border border-[#12544F]/70 rounded-xl text-sm text-[#f2fbf6] focus:outline-none focus:border-[#2A835F] focus:ring-1 focus:ring-[#2A835F] transition-colors"
             >
               <option value="">All Ratings</option>
               <option value="4.5">★ 4.5 & Above</option>
@@ -97,7 +97,7 @@ export default function ReviewExplorer({ products }) {
 
             <button
               type="submit"
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center flex-shrink-0"
+              className="px-4 py-2.5 bg-[#2A835F] hover:bg-[#329b71] text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center flex-shrink-0 shadow-md shadow-[#2A835F]/20 active:scale-[0.98]"
               title="Refresh search"
             >
               <Search className="w-4 h-4" />
@@ -105,12 +105,12 @@ export default function ReviewExplorer({ products }) {
           </div>
         </form>
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-800/60 text-xs text-slate-400">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#12544F]/50 text-xs text-[#7ea698]">
           <span>
             Found <strong className="text-white">{total}</strong> verified reviews
           </span>
           {isLoading && (
-            <span className="flex items-center space-x-1 text-indigo-400">
+            <span className="flex items-center space-x-1 text-[#8BBB92]">
               <RefreshCw className="w-3 h-3 animate-spin" />
               <span>Fetching...</span>
             </span>
@@ -120,10 +120,10 @@ export default function ReviewExplorer({ products }) {
 
       {/* Reviews Grid */}
       {reviews.length === 0 ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-12 text-center backdrop-blur-md">
-          <Smartphone className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-          <h4 className="text-base font-semibold text-slate-300">No reviews found</h4>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+        <div className="rounded-2xl border border-[#12544F]/40 bg-[#071b1f]/50 p-12 text-center backdrop-blur-md">
+          <Smartphone className="w-10 h-10 text-[#649182] mx-auto mb-3" />
+          <h4 className="text-base font-semibold text-[#f2fbf6]">No reviews found</h4>
+          <p className="text-xs text-[#7ea698] mt-1 max-w-sm mx-auto">
             Try adjusting your search criteria or launch a scraping job to collect reviews.
           </p>
         </div>
@@ -141,20 +141,20 @@ export default function ReviewExplorer({ products }) {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1 || isLoading}
-            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-sm text-slate-300 hover:bg-slate-800 disabled:opacity-40 transition-colors"
+            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-[#030c0e] border border-[#12544F]/70 text-sm text-[#8BBB92] hover:bg-[#12544F]/30 hover:text-white disabled:opacity-40 transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Previous</span>
           </button>
 
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-xs text-[#7ea698]">
             Page <strong className="text-white">{page}</strong> of <strong className="text-white">{totalPages}</strong>
           </span>
 
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages || isLoading}
-            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-sm text-slate-300 hover:bg-slate-800 disabled:opacity-40 transition-colors"
+            className="flex items-center space-x-1 px-4 py-2 rounded-xl bg-[#030c0e] border border-[#12544F]/70 text-sm text-[#8BBB92] hover:bg-[#12544F]/30 hover:text-white disabled:opacity-40 transition-colors"
           >
             <span>Next</span>
             <ChevronRight className="w-4 h-4" />

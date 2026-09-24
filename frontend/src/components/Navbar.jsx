@@ -9,7 +9,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-[#12544F]/40 bg-[#030c0e]/90 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-3">
@@ -17,16 +17,16 @@ export default function Navbar({ activeTab, setActiveTab }) {
               <img
                 src="/logo.png"
                 alt="Sentimental Logo"
-                className="w-full h-full object-contain filter drop-shadow-[0_2px_10px_rgba(99,102,241,0.25)]"
+                className="w-full h-full object-contain filter drop-shadow-[0_2px_12px_rgba(42,131,95,0.4)]"
               />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400">
+                <span className="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-[#8BBB92] to-[#2A835F]">
                   Sentimental
                 </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
+              <p className="text-xs text-[#8BBB92]/80 hidden sm:block">
                 Smartphone Aspect Based Sentiment Analysis
               </p>
             </div>
@@ -42,11 +42,11 @@ export default function Navbar({ activeTab, setActiveTab }) {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-sm shadow-indigo-500/10'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/80 border border-transparent'
+                      ? 'bg-[#12544F]/60 text-[#8BBB92] border border-[#2A835F]/70 shadow-sm shadow-[#2A835F]/20 font-semibold'
+                      : 'text-[#7ea698] hover:text-[#f2fbf6] hover:bg-[#12544F]/30 border border-transparent'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#8BBB92]' : 'text-[#649182]'}`} />
                   <span>{tab.label}</span>
                 </button>
               );
