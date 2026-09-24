@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="Aspect-Based Sentiment Analysis and Recommendation System — Module 1: Data Collection & Web Scraping System",
+    description="Aspect-Based Sentiment Analysis and Recommendation System — Data Collection & Web Scraping System",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -66,7 +66,7 @@ def health_check():
     return {
         "status": "healthy" if db_status == "ok" else "unhealthy",
         "database": db_status,
-        "module": "Module 1: Smartphone Review Data Collection and Web Scraping System"
+        "system": "Smartphone Review Data Collection and Web Scraping System"
     }
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

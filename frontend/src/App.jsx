@@ -107,130 +107,86 @@ export default function App() {
           />
         </div>
 
-        {/* Tab 1: Overview Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
-            {/* Pipeline Architecture Banner */}
-            <div className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-950 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
-              <div className="max-w-3xl">
-                <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 mb-3">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Module 1 Active Foundation</span>
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                  Smartphone Review Data Collection & Web Scraping System
-                </h1>
-                <p className="mt-2 text-sm text-slate-300 leading-relaxed">
-                  Ingests smartphone reviews with strict deduplication, schema validation, ethical delay policies, 
-                  and persistent storage in SQLite. Designed as the unyielding data foundation for subsequent 
-                  Aspect-Based Sentiment Analysis and Recommendation pipelines.
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
+            <div className="relative overflow-hidden rounded-2xl border border-indigo-500/25 bg-gradient-to-r from-slate-900/90 via-indigo-950/40 to-slate-900/90 p-6 sm:p-7 backdrop-blur-xl shadow-xl">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="space-y-1.5 max-w-2xl">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    Smartphone Review Data Collection
+                  </h1>
+                  <p className="text-sm text-slate-400 leading-relaxed">
+                    Automated review scraping with 3-tier deduplication, polite rate-limiting, and SQLite persistence.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
                   <button
                     onClick={() => setActiveTab('scraper')}
-                    className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/25 transition-all"
+                    className="group inline-flex items-center space-x-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                   >
                     <span>Launch New Scraper Job</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
                   <button
                     onClick={() => setActiveTab('reviews')}
-                    className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition-all"
+                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 font-semibold text-xs transition-colors"
                   >
-                    <span>Browse Collected Reviews</span>
+                    <span>Browse Reviews</span>
                   </button>
                 </div>
               </div>
             </div>
 
             {/* Smartphone Catalog Summary */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-2xl">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
-                    <Smartphone className="w-4 h-4 text-indigo-400" />
-                    <span>Active Smartphone Catalog</span>
-                  </h3>
-                  <span className="text-xs text-slate-400 font-mono">
-                    {products.length} Products
-                  </span>
-                </div>
-
-                <div className="mt-4 overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-950/80 text-slate-400 border-b border-slate-800">
-                      <tr>
-                        <th className="py-2.5 px-4 font-semibold">Device Model</th>
-                        <th className="py-2.5 px-4 font-semibold">Brand</th>
-                        <th className="py-2.5 px-4 font-semibold text-center">Reviews</th>
-                        <th className="py-2.5 px-4 font-semibold text-center">Avg Rating</th>
-                        <th className="py-2.5 px-4 font-semibold text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/60">
-                      {products.map((p) => (
-                        <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
-                          <td className="py-3 px-4 font-medium text-white">{p.name}</td>
-                          <td className="py-3 px-4 text-slate-400">{p.brand || '—'}</td>
-                          <td className="py-3 px-4 text-center font-mono font-bold text-indigo-400">
-                            {p.review_count}
-                          </td>
-                          <td className="py-3 px-4 text-center font-mono">
-                            {p.average_rating ? (
-                              <span className="text-amber-400 font-semibold">★ {p.average_rating}</span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <button
-                              onClick={() => setActiveTab('reviews')}
-                              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium"
-                            >
-                              Explore
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-2xl">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                  <Smartphone className="w-4 h-4 text-indigo-400" />
+                  <span>Active Smartphone Catalog</span>
+                </h3>
+                <span className="text-xs text-slate-400">
+                  {products.length} Products
+                </span>
               </div>
 
-              {/* System Architecture Roadmap */}
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-2xl space-y-4">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                  Future Pipeline Roadmap
-                </h3>
-                <div className="space-y-2.5 text-xs">
-                  <div className="p-3 rounded-xl bg-indigo-950/50 border border-indigo-500/40 text-indigo-200 flex items-center justify-between">
-                    <div>
-                      <strong className="block text-white font-semibold">Module 1: Data Collection & Scraping</strong>
-                      <span className="text-[11px] text-indigo-300">SQLite persistence, deduplication, FastAPI</span>
-                    </div>
-                    <span className="text-[10px] font-bold uppercase bg-indigo-500 text-white px-2 py-0.5 rounded">Active</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800 text-slate-400">
-                    <strong className="text-slate-300 block">Module 2: Text Preprocessing</strong>
-                    <span className="text-[11px]">Tokenization, stopword removal, lemmatization</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800 text-slate-400">
-                    <strong className="text-slate-300 block">Module 3: Aspect Extraction</strong>
-                    <span className="text-[11px]">Camera, battery, display, performance tags</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800 text-slate-400">
-                    <strong className="text-slate-300 block">Module 4: Aspect Sentiment</strong>
-                    <span className="text-[11px]">Polarity classification per aspect</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800 text-slate-400">
-                    <strong className="text-slate-300 block">Modules 5–8: Scoring & Recommendation</strong>
-                    <span className="text-[11px]">Comparison, multi-criteria scoring, UI</span>
-                  </div>
-                </div>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-4 font-semibold">Device Model</th>
+                      <th className="py-2.5 px-4 font-semibold">Brand</th>
+                      <th className="py-2.5 px-4 font-semibold text-center">Reviews</th>
+                      <th className="py-2.5 px-4 font-semibold text-center">Avg Rating</th>
+                      <th className="py-2.5 px-4 font-semibold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {products.map((p) => (
+                      <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="py-3 px-4 font-medium text-white">{p.name}</td>
+                        <td className="py-3 px-4 text-slate-400">{p.brand || '—'}</td>
+                        <td className="py-3 px-4 text-center font-mono font-bold text-indigo-400">
+                          {p.review_count}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono">
+                          {p.average_rating ? (
+                            <span className="text-amber-400 font-semibold">★ {p.average_rating}</span>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => setActiveTab('reviews')}
+                            className="text-xs text-indigo-400 hover:text-indigo-300 font-medium"
+                          >
+                            Explore
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -267,7 +223,6 @@ export default function App() {
       <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>SmartReview — Aspect-Based Sentiment Analysis & Recommendation System</span>
-          <span className="font-mono text-slate-400">Module 1: Data Collection & Web Scraping System</span>
         </div>
       </footer>
     </div>

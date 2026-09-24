@@ -1,24 +1,17 @@
 import React, { useState } from 'react';
-import { Play, ShieldCheck, Clock, Layers, AlertCircle, Globe, Cpu } from 'lucide-react';
+import { Play, ShieldCheck, Clock, Layers, AlertCircle, Globe, Plus } from 'lucide-react';
 import { api } from '../api/client';
 
-const DEMO_PRESETS = [
-  { name: 'Apple iPhone 15 Pro', brand: 'Apple', url: 'demo://iphone-15-pro' },
-  { name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', url: 'demo://galaxy-s24-ultra' },
-  { name: 'Google Pixel 8 Pro', brand: 'Google', url: 'demo://pixel-8-pro' },
-];
-
-const GSMARENA_PRESETS = [
+const PRESETS = [
   { name: 'Apple iPhone 15 Pro', brand: 'Apple', url: 'https://www.gsmarena.com/apple_iphone_15_pro-reviews-12557.php' },
   { name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', url: 'https://www.gsmarena.com/samsung_galaxy_s24_ultra-reviews-12771.php' },
   { name: 'Google Pixel 8 Pro', brand: 'Google', url: 'https://www.gsmarena.com/google_pixel_8_pro-reviews-12540.php' },
 ];
 
 export default function ScraperLauncher({ onJobLaunched }) {
-  const [adapterType, setAdapterType] = useState('demo'); // 'demo' | 'gsmarena'
-  const [targetUrl, setTargetUrl] = useState(DEMO_PRESETS[0].url);
-  const [productName, setProductName] = useState(DEMO_PRESETS[0].name);
-  const [brand, setBrand] = useState(DEMO_PRESETS[0].brand);
+  const [targetUrl, setTargetUrl] = useState(PRESETS[0].url);
+  const [productName, setProductName] = useState(PRESETS[0].name);
+  const [brand, setBrand] = useState(PRESETS[0].brand);
   const [pageMode, setPageMode] = useState('limited'); // 'limited' | 'unlimited'
   const [maxPages, setMaxPages] = useState('5'); // Default: 5
   const [maxReviews, setMaxReviews] = useState('20');
@@ -26,18 +19,16 @@ export default function ScraperLauncher({ onJobLaunched }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleAdapterChange = (type) => {
-    setAdapterType(type);
-    const defaultPreset = type === 'demo' ? DEMO_PRESETS[0] : GSMARENA_PRESETS[0];
-    setTargetUrl(defaultPreset.url);
-    setProductName(defaultPreset.name);
-    setBrand(defaultPreset.brand);
-  };
-
   const handleSelectPreset = (preset) => {
     setTargetUrl(preset.url);
     setProductName(preset.name);
     setBrand(preset.brand);
+  };
+
+  const handleSelectCustom = () => {
+    setTargetUrl('');
+    setProductName('');
+    setBrand('');
   };
 
   const handleSubmit = async (e) => {
@@ -58,7 +49,7 @@ export default function ScraperLauncher({ onJobLaunched }) {
 
       const payload = {
         target_url: targetUrl.trim(),
-        scraper_type: adapterType,
+        scraper_type: 'gsmarena',
         product_name: productName.trim() || null,
         brand: brand.trim() || null,
         max_pages: parsedMaxPages,
@@ -77,8 +68,6 @@ export default function ScraperLauncher({ onJobLaunched }) {
     }
   };
 
-  const currentPresets = adapterType === 'demo' ? DEMO_PRESETS : GSMARENA_PRESETS;
-
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-2xl">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
@@ -87,14 +76,8 @@ export default function ScraperLauncher({ onJobLaunched }) {
             <span>Dispatch Scraping Job</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Collect smartphone reviews with polite delays, limits, and 3-tier deduplication
+            Collect smartphone reviews with polite delays, limits, and deduplication
           </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="flex items-center space-x-1.5 text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full font-medium">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Ethical Scraper Policy</span>
-          </span>
         </div>
       </div>
 
@@ -105,59 +88,6 @@ export default function ScraperLauncher({ onJobLaunched }) {
         </div>
       )}
 
-      {/* Source Adapter Selector */}
-      <div className="mt-5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2">
-          Select Review Source Adapter
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => handleAdapterChange('demo')}
-            className={`p-3.5 rounded-xl border text-left transition-all flex items-start space-x-3 ${
-              adapterType === 'demo'
-                ? 'border-indigo-500 bg-indigo-950/40 text-white shadow-lg shadow-indigo-500/10'
-                : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-            }`}
-          >
-            <div className="p-2 rounded-lg bg-indigo-900/40 border border-indigo-700/50 mt-0.5">
-              <Cpu className="w-4 h-4 text-indigo-400" />
-            </div>
-            <div>
-              <div className="font-semibold text-sm">Demo / Local Fixture</div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                Deterministic HTML fixtures for offline testing & viva demonstrations
-              </div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleAdapterChange('gsmarena')}
-            className={`p-3.5 rounded-xl border text-left transition-all flex items-start space-x-3 ${
-              adapterType === 'gsmarena'
-                ? 'border-emerald-500 bg-emerald-950/40 text-white shadow-lg shadow-emerald-500/10'
-                : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-            }`}
-          >
-            <div className="p-2 rounded-lg bg-emerald-900/40 border border-emerald-700/50 mt-0.5">
-              <Globe className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div>
-              <div className="font-semibold text-sm flex items-center space-x-1.5">
-                <span>GSM Arena</span>
-                <span className="text-[10px] bg-emerald-900/60 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-700/50">
-                  Public Source
-                </span>
-              </div>
-              <div className="text-xs text-slate-400 mt-0.5">
-                Live user opinions from gsmarena.com (No login/CAPTCHA required)
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-
       {/* Quick Presets (Optional Shortcuts) */}
       <div className="mt-5">
         <div className="flex items-center justify-between mb-2">
@@ -166,8 +96,8 @@ export default function ScraperLauncher({ onJobLaunched }) {
           </label>
           <span className="text-[11px] text-slate-500">Clicking populates URL & metadata</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-          {currentPresets.map((preset) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {PRESETS.map((preset) => {
             const isSelected = targetUrl.trim() === preset.url.trim();
             return (
               <button
@@ -183,13 +113,35 @@ export default function ScraperLauncher({ onJobLaunched }) {
                 <div className="font-medium text-sm truncate">{preset.name}</div>
                 <div className="text-xs text-slate-400 flex items-center justify-between mt-1">
                   <span>{preset.brand}</span>
-                  <span className="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
-                    {adapterType === 'demo' ? 'Fixture' : 'GSM Arena'}
+                  <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
+                    GSM Arena
                   </span>
                 </div>
               </button>
             );
           })}
+
+          {/* Custom Empty Preset */}
+          <button
+            type="button"
+            onClick={handleSelectCustom}
+            className={`p-3 rounded-xl border text-left transition-all ${
+              !PRESETS.some((p) => p.url.trim() === targetUrl.trim())
+                ? 'border-indigo-500 bg-indigo-950/40 text-white shadow-md shadow-indigo-500/10'
+                : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+            }`}
+          >
+            <div className="font-medium text-sm flex items-center space-x-1.5 truncate">
+              <Plus className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <span>Custom URL</span>
+            </div>
+            <div className="text-xs text-slate-400 flex items-center justify-between mt-1">
+              <span>User Defined</span>
+              <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded">
+                GSM Arena
+              </span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -200,9 +152,9 @@ export default function ScraperLauncher({ onJobLaunched }) {
               <label className="text-xs font-medium text-slate-300">
                 Target Source URL <span className="text-indigo-400 text-[11px] font-normal">(Authoritative Input)</span>
               </label>
-              {currentPresets.find((p) => p.url.trim() === targetUrl.trim()) ? (
+              {PRESETS.find((p) => p.url.trim() === targetUrl.trim()) ? (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-950 border border-indigo-700/60 text-indigo-300 font-medium">
-                  Preset: {currentPresets.find((p) => p.url.trim() === targetUrl.trim()).name}
+                  Preset: {PRESETS.find((p) => p.url.trim() === targetUrl.trim()).name}
                 </span>
               ) : (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-700/60 text-emerald-300 font-medium">
@@ -216,12 +168,8 @@ export default function ScraperLauncher({ onJobLaunched }) {
                 required
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder={
-                  adapterType === 'demo'
-                    ? 'demo://local-catalog/...'
-                    : 'https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php'
-                }
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono pr-20"
+                placeholder="https://www.gsmarena.com/samsung_galaxy_s25_ultra-review-2787.php"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-200 focus:outline-none focus:border-indigo-500 pr-20"
               />
               {targetUrl && (
                 <button
@@ -238,9 +186,7 @@ export default function ScraperLauncher({ onJobLaunched }) {
               )}
             </div>
             <p className="text-[11px] text-slate-500 mt-1">
-              {adapterType === 'demo'
-                ? 'Accepts demo fixture schemes (e.g. demo://iphone-15-pro)'
-                : 'Accepts ANY GSM Arena smartphone review or user opinion URL'}
+              Accepts ANY GSM Arena smartphone review or user opinion URL
             </p>
           </div>
 
@@ -316,7 +262,7 @@ export default function ScraperLauncher({ onJobLaunched }) {
                   placeholder="e.g. 10, 20, 50, 100"
                   value={maxPages}
                   onChange={(e) => setMaxPages(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+                  className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
                 />
                 <div className="flex items-center space-x-1 mt-1.5">
                   {[5, 10, 25, 50, 100].map((num) => (
@@ -324,7 +270,7 @@ export default function ScraperLauncher({ onJobLaunched }) {
                       key={num}
                       type="button"
                       onClick={() => setMaxPages(String(num))}
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                      className={`text-[10px] px-1.5 py-0.5 rounded ${
                         maxPages === String(num)
                           ? 'bg-indigo-900/60 border border-indigo-600 text-indigo-200'
                           : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-slate-300'
@@ -351,7 +297,7 @@ export default function ScraperLauncher({ onJobLaunched }) {
                 <Clock className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Inter-Page Delay</span>
               </label>
-              <span className="text-xs font-bold text-indigo-400 font-mono">{delaySeconds}s</span>
+              <span className="text-xs font-bold text-indigo-400">{delaySeconds}s</span>
             </div>
             <input
               type="range"
@@ -375,15 +321,12 @@ export default function ScraperLauncher({ onJobLaunched }) {
               placeholder="e.g. 20 (empty = unlimited)"
               value={maxReviews}
               onChange={(e) => setMaxReviews(e.target.value)}
-              className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-mono"
+              className="w-full px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
             />
           </div>
         </div>
 
         <div className="pt-3 flex items-center justify-between">
-          <div className="text-[11px] text-slate-400 hidden sm:block">
-            * 3-Tier Deduplication: Source Review ID → Review Permalink URL → Deterministic SHA256(Product + Source + Content)
-          </div>
           <button
             type="submit"
             disabled={isSubmitting}

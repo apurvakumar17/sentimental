@@ -17,7 +17,6 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = '
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-slate-400">{title}</p>
           <p className="mt-2 text-3xl font-bold tracking-tight text-white">{value}</p>
-          {subtitle && <p className="mt-1 text-xs text-slate-400">{subtitle}</p>}
         </div>
         {Icon && (
           <div className="rounded-xl bg-slate-900/80 p-3 border border-slate-700/50">

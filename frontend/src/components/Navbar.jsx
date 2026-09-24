@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Cpu, Layers, Sparkles } from 'lucide-react';
+import { Database, Cpu, Layers } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
   const tabs = [
@@ -13,20 +13,21 @@ export default function Navbar({ activeTab, setActiveTab }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+            <div className="w-10 h-10 flex items-center justify-center shrink-0">
+              <img
+                src="/logo.png"
+                alt="Sentimental Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_2px_10px_rgba(99,102,241,0.25)]"
+              />
             </div>
             <div>
               <div className="flex items-center space-x-2">
                 <span className="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400">
-                  SmartReview
-                </span>
-                <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-indigo-950 text-indigo-300 border border-indigo-700/50">
-                  Module 1
+                  Sentimental
                 </span>
               </div>
               <p className="text-xs text-slate-400 hidden sm:block">
-                Smartphone Review Data Collection & Web Scraping System
+                Smartphone Aspect Based Sentiment Analysis
               </p>
             </div>
           </div>

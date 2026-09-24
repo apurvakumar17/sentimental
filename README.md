@@ -1,4 +1,4 @@
-# SmartReview — Module 1: Smartphone Review Data Collection & Web Scraping System
+# SmartReview — Smartphone Review Data Collection & Web Scraping System
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
@@ -7,13 +7,13 @@
 [![Tests](https://img.shields.io/badge/Tests-54%20Passing-brightgreen.svg)]()
 
 > **SmartReview** is an Aspect-Based Sentiment Analysis and Product Recommendation System for Smartphone Reviews.
-> This repository contains the hardened, academically defensible implementation of **Module 1**: "Smartphone Review Data Collection and Web Scraping System".
+> This repository contains the hardened, production-grade implementation of the "Smartphone Review Data Collection and Web Scraping System".
 
 ---
 
 ## 1. Scope & Boundaries
 
-### What Module 1 Does
+### What The System Does
 - Collects structured smartphone reviews from permitted demo fixtures and production public review sources (GSM Arena).
 - Normalizes text safely (Unicode NFKC, entity unescaping, whitespace collapsing) while strictly preserving casing, punctuation, and all words for future NLP processing.
 - Executes a **3-Tier Deduplication Strategy** (External Review ID → Review Permalink URL → Deterministic Content Hash).
@@ -22,7 +22,7 @@
 - Persists data in SQLite with Write-Ahead Logging (`WAL` mode).
 - Exposes structured REST APIs via FastAPI and provides an interactive React + Tailwind CSS dashboard.
 
-### What Module 1 Does NOT Do (Strictly Reserved for Future Modules)
+### Scope & Boundaries (Reserved for Future Pipelines)
 - **NO Stopword removal, stemming, or lemmatization** (Reserved for Module 2).
 - **NO Tokenization or POS tagging** (Reserved for Module 2).
 - **NO Aspect extraction or category tagging** (Reserved for Module 3).
@@ -36,7 +36,7 @@
 ## 2. Architecture & Pipeline Roadmap
 
 ```
-Module 1: Data Collection & Web Scraping (Active)
+Data Collection & Web Scraping System (Active)
    │
    ▼  [Contract: review ID, product ID, raw_review_text, normalized_review_text, rating, source]
 Module 2: Text Preprocessing Pipeline
