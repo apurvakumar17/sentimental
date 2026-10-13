@@ -9,7 +9,8 @@ import {
   ArrowRight,
   ShieldCheck,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  UploadCloud
 } from 'lucide-react';
 import { api } from './api/client';
 import Navbar from './components/Navbar';
@@ -18,6 +19,11 @@ import ScraperLauncher from './components/ScraperLauncher';
 import JobTracker from './components/JobTracker';
 import JobHistory from './components/JobHistory';
 import ReviewExplorer from './components/ReviewExplorer';
+import DatasetManager from './components/DatasetManager';
+import DatasetImporter from './components/DatasetImporter';
+import ClearDatabaseModal from './components/ClearDatabaseModal';
+import AbsaDashboard from './components/AbsaDashboard';
+import RecommendationDashboard from './components/RecommendationDashboard';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -26,6 +32,7 @@ export default function App() {
   const [activeJob, setActiveJob] = useState(null);
   const [health, setHealth] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClearDbModalOpen, setIsClearDbModalOpen] = useState(false);
 
   const loadData = async () => {
     try {
@@ -133,6 +140,26 @@ export default function App() {
                   >
                     <span>Browse Reviews</span>
                   </button>
+                  <button
+                    onClick={() => setActiveTab('datasets')}
+                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-[#12544F]/50 border border-[#2A835F]/60 hover:bg-[#12544F] text-[#8BBB92] hover:text-white font-semibold text-xs transition-colors"
+                  >
+                    <span>Dataset & Quality</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('imports')}
+                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-[#2A835F]/30 border border-[#2A835F]/60 hover:bg-[#2A835F]/50 text-[#8BBB92] hover:text-white font-semibold text-xs transition-colors"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5" />
+                    <span>Import Kaggle CSV</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('absa')}
+                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-gradient-to-r from-[#12544F] to-[#2A835F]/80 border border-[#2A835F] hover:from-[#186a64] hover:to-[#329b71] text-white font-bold text-xs transition-all shadow-md shadow-[#2A835F]/20"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#8BBB92]" />
+                    <span>ABSA Analysis</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -201,6 +228,7 @@ export default function App() {
               <JobTracker
                 initialJob={activeJob}
                 onJobCompleted={handleJobCompleted}
+                onNavigateToTab={setActiveTab}
               />
             )}
 
@@ -217,6 +245,42 @@ export default function App() {
             <ReviewExplorer products={products} />
           </div>
         )}
+
+        {/* Tab 4: Dataset & Quality Management */}
+        {activeTab === 'datasets' && (
+          <div>
+            <DatasetManager
+              products={products}
+              onOpenClearDbModal={() => setIsClearDbModalOpen(true)}
+            />
+          </div>
+        )}
+
+        {/* Tab 5: Kaggle Dataset Ingestion */}
+        {activeTab === 'imports' && (
+          <div>
+            <DatasetImporter onImportCompleted={loadData} />
+          </div>
+        )}
+
+        {/* Tab 6: Aspect-Based Sentiment Analysis */}
+        {activeTab === 'absa' && (
+          <div>
+            <AbsaDashboard
+              products={products}
+              onNavigateToReviews={() => setActiveTab('reviews')}
+            />
+          </div>
+        )}
+
+        {/* Tab 7: Phase 4 Recommendation Engine */}
+        {activeTab === 'recommendations' && (
+          <div>
+            <RecommendationDashboard
+              onNavigateToReviews={() => setActiveTab('reviews')}
+            />
+          </div>
+        )}
       </main>
 
       {/* Footer */}
@@ -225,6 +289,17 @@ export default function App() {
           <span>SmartReview — Aspect-Based Sentiment Analysis & Recommendation System</span>
         </div>
       </footer>
+
+      <ClearDatabaseModal
+        isOpen={isClearDbModalOpen}
+        onClose={() => setIsClearDbModalOpen(false)}
+        onDatabaseCleared={loadData}
+        stats={{
+          totalReviews,
+          totalProducts: products.length,
+          totalJobs: jobs.length,
+        }}
+      />
     </div>
   );
 }

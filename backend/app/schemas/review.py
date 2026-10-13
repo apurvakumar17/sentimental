@@ -58,6 +58,9 @@ class ReviewResponse(BaseModel):
     helpful_count: int
     content_hash: str
     scraped_timestamp: datetime
+    ingestion_method: str = "scraper"
+    import_job_id: Optional[int] = None
+    dataset_sentiment: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

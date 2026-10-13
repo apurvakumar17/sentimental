@@ -222,6 +222,12 @@ class BaseReviewScraper(ABC):
                     "reviews": [],
                     "error": str(e)
                 }
+                # Terminate immediately on Cloudflare human-verification challenges or fatal access blocks
+                err_lower = str(e).lower()
+                if "cloudflare" in err_lower or "verification" in err_lower or "forbidden" in err_lower:
+                    logger.warning("Terminating crawl immediately due to origin verification challenge or access block.")
+                    break
+
                 # In unlimited mode, unhandled fatal fetch errors terminate pagination
                 if max_pages is None:
                     break

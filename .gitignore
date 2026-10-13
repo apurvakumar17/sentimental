@@ -58,6 +58,10 @@ backend/data/*.db-shm
 
 # Preserve backend data folder
 !backend/data/.gitkeep
+backend/data/exports/*
+!backend/data/exports/.gitkeep
+backend/data/temp_imports/*
+!backend/data/temp_imports/.gitkeep
 
 # Logs
 *.log

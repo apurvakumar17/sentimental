@@ -12,6 +12,55 @@ logger = logging.getLogger("smartreview.gsmarena_scraper")
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 
+
+class CloudflareChallengeError(Exception):
+    """
+    Raised when GSM Arena presents a Cloudflare human-verification challenge
+    (e.g., Turnstile, Managed Challenge, or 403/503 challenge page).
+    """
+    pass
+
+
+def is_cloudflare_challenge(status_code: int, html_content: str) -> bool:
+    """
+    Determines whether a response is a Cloudflare anti-bot verification challenge.
+    Distinguishes challenges from valid review pages, generic 404s, or other errors.
+    """
+    if not html_content:
+        return False
+
+    lower_html = html_content.lower()
+
+    # Characteristic Cloudflare challenge titles
+    title_markers = [
+        "just a moment...",
+        "attention required! | cloudflare",
+        "security check to access",
+        "verify you are human",
+    ]
+    if any(marker in lower_html for marker in title_markers):
+        return True
+
+    # Cloudflare challenge infrastructure signatures
+    cf_signatures = [
+        "cf-turnstile",
+        "cf-chl-",
+        "challenge-platform",
+        "challenge-form",
+        "cloudflare.com/5xx-error-landing",
+        "ray id:",
+    ]
+    matches = sum(1 for sig in cf_signatures if sig in lower_html)
+    if matches >= 2:
+        return True
+
+    # HTTP 403 or 503 accompanied by Cloudflare branding
+    if status_code in (403, 503) and ("cloudflare" in lower_html or "cf-" in lower_html):
+        return True
+
+    return False
+
+
 class GSMArenaReviewScraper(BaseReviewScraper):
     """
     Production Review Source Adapter for GSM Arena User Opinions & Reviews.
@@ -108,11 +157,14 @@ class GSMArenaReviewScraper(BaseReviewScraper):
         """
         Fetches page content from GSM Arena with respectful delay,
         or loads local test fixture if gsmarena:// scheme is requested.
+        Detects Cloudflare challenge pages safely without attempting to bypass them.
         """
         # Handle local test fixtures for deterministic offline testing
         if url.startswith("gsmarena://"):
             clean_url = url.lower()
-            if "malformed" in clean_url:
+            if "challenge" in clean_url or "cloudflare" in clean_url:
+                fixture_name = "gsmarena_challenge.html"
+            elif "malformed" in clean_url:
                 fixture_name = "gsmarena_malformed.html"
             elif "fixture-a" in clean_url or "fixture_a" in clean_url:
                 fixture_name = "gsmarena_fixture_a.html"
@@ -124,14 +176,40 @@ class GSMArenaReviewScraper(BaseReviewScraper):
             fixture_path = FIXTURES_DIR / fixture_name
             if fixture_path.exists():
                 logger.info(f"Loading local GSM Arena fixture: {fixture_path}")
-                return fixture_path.read_text(encoding="utf-8")
+                content = fixture_path.read_text(encoding="utf-8")
+                if is_cloudflare_challenge(200, content):
+                    raise CloudflareChallengeError(
+                        "Cloudflare human verification challenge encountered on GSM Arena. "
+                        "Automated access is restricted by the origin server. "
+                        "Please use the Dataset Import tab to upload smartphone reviews directly."
+                    )
+                return content
             raise FileNotFoundError(f"Fixture not found at {fixture_path}")
 
         # Live HTTP fetch for public source
         page_url = self.build_page_url(url, page_num)
         logger.info(f"Fetching public GSM Arena page {page_num}: {page_url}")
 
-        response = self.session.get(page_url, timeout=self.timeout)
+        try:
+            response = self.session.get(page_url, timeout=self.timeout)
+        except requests.exceptions.HTTPError as http_err:
+            resp = getattr(http_err, "response", None)
+            if resp is not None and is_cloudflare_challenge(resp.status_code, resp.text):
+                raise CloudflareChallengeError(
+                    "Cloudflare human verification challenge encountered on GSM Arena. "
+                    "Automated access is restricted by the origin server. "
+                    "Please use the Dataset Import tab to upload smartphone reviews directly."
+                ) from http_err
+            raise
+
+        # Check for 200/403/503 Cloudflare challenge page
+        if is_cloudflare_challenge(response.status_code, response.text):
+            raise CloudflareChallengeError(
+                "Cloudflare human verification challenge encountered on GSM Arena. "
+                "Automated access is restricted by the origin server. "
+                "Please use the Dataset Import tab to upload smartphone reviews directly."
+            )
+
         response.raise_for_status()
         return response.text
 

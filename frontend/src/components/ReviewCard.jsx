@@ -1,8 +1,32 @@
 import React, { useState } from 'react';
-import { Star, ThumbsUp, Calendar, User, Smartphone, Hash, Code } from 'lucide-react';
+import { Star, ThumbsUp, Calendar, User, Smartphone, Hash, Code, Sparkles, RefreshCw } from 'lucide-react';
+import { api } from '../api/client';
 
 export default function ReviewCard({ review }) {
   const [showNormalized, setShowNormalized] = useState(false);
+  const [absaResult, setAbsaResult] = useState(null);
+  const [isAnalyzingAbsa, setIsAnalyzingAbsa] = useState(false);
+  const [showAbsa, setShowAbsa] = useState(false);
+
+  const handleToggleAbsa = async () => {
+    if (showAbsa) {
+      setShowAbsa(false);
+      return;
+    }
+    setShowAbsa(true);
+    if (!absaResult) {
+      setIsAnalyzingAbsa(true);
+      try {
+        const text = review.normalized_review_text || review.raw_review_text;
+        const res = await api.predictAbsa(text, false);
+        setAbsaResult(res);
+      } catch (err) {
+        console.error('Failed to analyze ABSA for review:', err);
+      } finally {
+        setIsAnalyzingAbsa(false);
+      }
+    }
+  };
 
   const renderStars = (rating) => {
     if (rating === null || rating === undefined) return null;
@@ -44,11 +68,20 @@ export default function ReviewCard({ review }) {
           )}
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           {renderStars(review.rating)}
           <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-[#030c0e] text-[#8BBB92] border border-[#12544F]/50">
             {review.source}
           </span>
+          {review.ingestion_method === 'kaggle_import' ? (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-[#2A835F]/20 text-[#8BBB92] border border-[#2A835F]/50 font-medium">
+              Kaggle Import
+            </span>
+          ) : (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-[#12544F]/20 text-[#7ea698] border border-[#12544F]/40">
+              Scraper
+            </span>
+          )}
         </div>
       </div>
 
@@ -64,6 +97,67 @@ export default function ReviewCard({ review }) {
             ? review.normalized_review_text
             : review.raw_review_text}
         </p>
+        {review.dataset_sentiment && (
+          <div className="mt-2.5 flex items-center space-x-2">
+            <span className="text-[10px] text-[#7ea698]">Kaggle Sentiment Label:</span>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+              review.dataset_sentiment.toLowerCase() === 'positive'
+                ? 'bg-[#2A835F]/20 text-[#8BBB92] border-[#2A835F]/50'
+                : review.dataset_sentiment.toLowerCase() === 'negative'
+                ? 'bg-rose-950/40 text-rose-300 border-rose-800/60'
+                : 'bg-amber-950/40 text-amber-300 border-amber-800/60'
+            }`}>
+              {review.dataset_sentiment}
+            </span>
+          </div>
+        )}
+
+        {/* Inline ABSA Analysis Tray */}
+        {showAbsa && (
+          <div className="mt-3 p-3 rounded-xl bg-[#030c0e]/90 border border-[#12544F]/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-white flex items-center space-x-1">
+                <Sparkles className="w-3.5 h-3.5 text-[#8BBB92]" />
+                <span>Aspect-Based Sentiment Analysis</span>
+              </span>
+              {isAnalyzingAbsa && (
+                <span className="text-[10px] text-[#8BBB92] flex items-center space-x-1">
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                  <span>Analyzing...</span>
+                </span>
+              )}
+            </div>
+
+            {!isAnalyzingAbsa && absaResult && (
+              <div>
+                {!absaResult.has_aspects ? (
+                  <p className="text-[11px] text-[#7ea698] italic">
+                    No canonical smartphone aspects detected in this review.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {absaResult.detected_aspects.map((asp, idx) => (
+                      <div
+                        key={idx}
+                        className={`text-[10px] font-semibold px-2.5 py-1 rounded-lg border flex items-center space-x-1.5 ${
+                          asp.sentiment === 'Positive'
+                            ? 'bg-[#2A835F]/20 text-[#8BBB92] border-[#2A835F]/50'
+                            : asp.sentiment === 'Negative'
+                            ? 'bg-rose-950/30 text-rose-300 border-rose-800/60'
+                            : 'bg-sky-950/30 text-sky-300 border-sky-800/60'
+                        }`}
+                      >
+                        <span className="font-bold text-white">{asp.aspect}:</span>
+                        <span>{asp.sentiment}</span>
+                        <span className="text-[9px] opacity-75 font-mono">({Math.round(asp.confidence * 100)}%)</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Footer Details */}
@@ -88,6 +182,18 @@ export default function ReviewCard({ review }) {
               <span>{review.helpful_count} helpful</span>
             </span>
           )}
+
+          <button
+            onClick={handleToggleAbsa}
+            className={`flex items-center space-x-1 text-[11px] px-2 py-0.5 rounded border transition-colors ${
+              showAbsa
+                ? 'bg-[#2A835F]/30 text-white border-[#2A835F]'
+                : 'text-[#8BBB92] hover:text-white border-[#12544F]/60 hover:bg-[#12544F]/40'
+            }`}
+          >
+            <Sparkles className="w-3 h-3 text-[#8BBB92]" />
+            <span>{showAbsa ? 'Hide ABSA' : 'Analyze ABSA'}</span>
+          </button>
 
           {review.normalized_review_text && (
             <button

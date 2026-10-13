@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { RefreshCw, CheckCircle, XCircle, AlertTriangle, FileText, Copy, Database, ShieldAlert } from 'lucide-react';
 import { api } from '../api/client';
 
-export default function JobTracker({ initialJob, onJobCompleted }) {
+export default function JobTracker({ initialJob, onJobCompleted, onNavigateToTab }) {
   const [job, setJob] = useState(initialJob);
   const [isPolling, setIsPolling] = useState(false);
 
@@ -116,9 +116,46 @@ export default function JobTracker({ initialJob, onJobCompleted }) {
       </div>
 
       {job.error_log && (
-        <div className="mt-4 p-3 rounded-xl bg-rose-950/40 border border-rose-700/60 text-rose-300 text-xs flex items-start space-x-2">
-          <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <pre className="   text-xs whitespace-pre-wrap">{job.error_log}</pre>
+        <div className="mt-4 space-y-3">
+          {(job.error_log.includes('Cloudflare') || job.error_log.includes('human verification') || job.error_log.includes('CLOUDFLARE_CHALLENGE')) ? (
+            <div className="p-4 rounded-xl bg-amber-950/60 border border-amber-600/70 text-amber-200">
+              <div className="flex items-start space-x-3">
+                <ShieldAlert className="w-5 h-5 flex-shrink-0 text-amber-400 mt-0.5" />
+                <div className="space-y-2 flex-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-amber-100">
+                      Cloudflare Human Verification Challenge Encountered
+                    </h4>
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-900/80 text-amber-300 border border-amber-700">
+                      Safe Abort
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-200/90 leading-relaxed">
+                    GSM Arena has presented a Cloudflare Turnstile human-verification challenge. To maintain polite, ethical web scraping practices, SmartReview automatically halted the crawl without attempting unauthorized stealth bypass or CAPTCHA solving.
+                  </p>
+                  <div className="pt-2 flex flex-wrap items-center gap-2">
+                    {onNavigateToTab && (
+                      <button
+                        type="button"
+                        onClick={() => onNavigateToTab('imports')}
+                        className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-[#2A835F] hover:bg-[#329b71] text-white text-xs font-semibold shadow-md transition-all active:scale-95"
+                      >
+                        <span>Use Kaggle Dataset Import (~50,000 Reviews)</span>
+                      </button>
+                    )}
+                    <span className="text-[11px] text-amber-300/80">
+                      Local fixture scraping (<code className="bg-amber-950 px-1 py-0.5 rounded">gsmarena://demo-fixture</code>) also remains available.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-700/60 text-rose-300 text-xs flex items-start space-x-2">
+              <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <pre className="font-mono text-xs whitespace-pre-wrap">{job.error_log}</pre>
+            </div>
+          )}
         </div>
       )}
     </div>

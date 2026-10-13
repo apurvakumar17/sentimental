@@ -9,6 +9,8 @@ class Review(Base):
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
     scraping_job_id = Column(Integer, ForeignKey("scraping_jobs.id"), nullable=True, index=True)
+    import_job_id = Column(Integer, ForeignKey("import_jobs.id"), nullable=True, index=True)
+    ingestion_method = Column(String(50), nullable=False, default="scraper", server_default="scraper", index=True)
 
     external_review_id = Column(String(150), nullable=True, index=True)
     review_title = Column(String(300), nullable=True)
@@ -27,6 +29,10 @@ class Review(Base):
 
     product = relationship("Product", back_populates="reviews")
     scraping_job = relationship("ScrapingJob", back_populates="reviews")
+    import_job = relationship("ImportJob", back_populates="reviews")
+    import_metadata = relationship("ReviewImportMetadata", back_populates="review", uselist=False, cascade="all, delete-orphan")
+    annotations = relationship("ReviewAnnotation", back_populates="review", cascade="all, delete-orphan")
+    predictions = relationship("ReviewPrediction", back_populates="review", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("content_hash", name="uq_review_content_hash"),

@@ -11,6 +11,7 @@ export default function ReviewExplorer({ products }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
   const [minRating, setMinRating] = useState('');
+  const [ingestionMethod, setIngestionMethod] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const loadReviews = async () => {
@@ -20,6 +21,7 @@ export default function ReviewExplorer({ products }) {
         productId: selectedProduct || undefined,
         minRating: minRating || undefined,
         q: searchQuery || undefined,
+        ingestionMethod: ingestionMethod || undefined,
         page,
         pageSize: 6,
       });
@@ -35,7 +37,7 @@ export default function ReviewExplorer({ products }) {
 
   useEffect(() => {
     loadReviews();
-  }, [page, selectedProduct, minRating]);
+  }, [page, selectedProduct, minRating, ingestionMethod]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -49,7 +51,7 @@ export default function ReviewExplorer({ products }) {
       <div className="rounded-2xl border border-[#12544F]/60 bg-[#071b1f]/95 p-5 backdrop-blur-xl shadow-2xl">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-12 gap-3">
           {/* Keyword Search */}
-          <div className="sm:col-span-6 relative">
+          <div className="sm:col-span-4 relative">
             <Search className="w-4 h-4 text-[#8BBB92] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -76,6 +78,22 @@ export default function ReviewExplorer({ products }) {
                   {p.name} ({p.review_count})
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Ingestion Method Filter */}
+          <div className="sm:col-span-2">
+            <select
+              value={ingestionMethod}
+              onChange={(e) => {
+                setIngestionMethod(e.target.value);
+                setPage(1);
+              }}
+              className="w-full px-3 py-2.5 bg-[#030c0e] border border-[#12544F]/70 rounded-xl text-sm text-[#f2fbf6] focus:outline-none focus:border-[#2A835F] focus:ring-1 focus:ring-[#2A835F] transition-colors"
+            >
+              <option value="">All Ingestion Sources</option>
+              <option value="kaggle_import">Kaggle Dataset</option>
+              <option value="scraper">Web Scraper</option>
             </select>
           </div>
 

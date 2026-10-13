@@ -35,3 +35,18 @@ def safe_normalize_text(text: str) -> str:
     normalized = " ".join(normalized.split())
 
     return normalized.strip()
+
+
+def get_text_stats(text: str) -> dict:
+    """
+    Computes basic text length measurements.
+    Returns character count and whitespace-delimited word count.
+    """
+    if not text:
+        return {"char_count": 0, "word_count": 0}
+    clean = text.strip()
+    return {
+        "char_count": len(clean),
+        "word_count": len(clean.split())
+    }
+

@@ -30,6 +30,12 @@ async def lifespan(app: FastAPI):
                 conn.execute(text("ALTER TABLE scraping_jobs ADD COLUMN max_pages INTEGER DEFAULT 3"))
             if "max_reviews" not in cols:
                 conn.execute(text("ALTER TABLE scraping_jobs ADD COLUMN max_reviews INTEGER"))
+
+            rev_cols = [row[1] for row in conn.execute(text("PRAGMA table_info(reviews)")).fetchall()]
+            if "ingestion_method" not in rev_cols:
+                conn.execute(text("ALTER TABLE reviews ADD COLUMN ingestion_method VARCHAR(50) DEFAULT 'scraper'"))
+            if "import_job_id" not in rev_cols:
+                conn.execute(text("ALTER TABLE reviews ADD COLUMN import_job_id INTEGER"))
     except Exception as exc:
         logger.warning(f"Schema migration warning: {exc}")
 

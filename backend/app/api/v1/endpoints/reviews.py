@@ -15,6 +15,7 @@ router = APIRouter()
 def list_reviews(
     product_id: Optional[int] = Query(None, description="Filter by product ID"),
     source: Optional[str] = Query(None, description="Filter by review source"),
+    ingestion_method: Optional[str] = Query(None, description="Filter by ingestion method ('scraper' or 'kaggle_import')"),
     min_rating: Optional[float] = Query(None, ge=0.0, le=5.0, description="Minimum rating"),
     max_rating: Optional[float] = Query(None, ge=0.0, le=5.0, description="Maximum rating"),
     q: Optional[str] = Query(None, description="Keyword search in title or text"),
@@ -28,6 +29,8 @@ def list_reviews(
         query = query.filter(Review.product_id == product_id)
     if source:
         query = query.filter(Review.source.ilike(f"%{source}%"))
+    if ingestion_method:
+        query = query.filter(Review.ingestion_method == ingestion_method.strip())
     if min_rating is not None:
         query = query.filter(Review.rating >= min_rating)
     if max_rating is not None:
@@ -67,7 +70,10 @@ def list_reviews(
             review_url=r.review_url,
             helpful_count=r.helpful_count,
             content_hash=r.content_hash,
-            scraped_timestamp=r.scraped_timestamp
+            scraped_timestamp=r.scraped_timestamp,
+            ingestion_method=r.ingestion_method or "scraper",
+            import_job_id=r.import_job_id,
+            dataset_sentiment=r.import_metadata.dataset_sentiment if r.import_metadata else None,
         ))
 
     return ReviewListResponse(
@@ -102,5 +108,8 @@ def get_review(review_id: int, db: Session = Depends(get_db)):
         review_url=r.review_url,
         helpful_count=r.helpful_count,
         content_hash=r.content_hash,
-        scraped_timestamp=r.scraped_timestamp
+        scraped_timestamp=r.scraped_timestamp,
+        ingestion_method=r.ingestion_method or "scraper",
+        import_job_id=r.import_job_id,
+        dataset_sentiment=r.import_metadata.dataset_sentiment if r.import_metadata else None,
     )
