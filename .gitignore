@@ -46,7 +46,7 @@ htmlcov/
 # =========================
 # Database & Runtime Data
 # =========================
-!backend/data/smartreview.db
+backend/data/*.db
 backend/data/*.db-wal
 backend/data/*.db-shm
 *.sqlite
