@@ -2,11 +2,13 @@ from typing import Dict, Type
 from backend.app.scrapers.base import BaseReviewScraper
 from backend.app.scrapers.demo_scraper import DemoReviewScraper
 from backend.app.scrapers.gsmarena_scraper import GSMArenaReviewScraper
+from backend.app.scrapers.flipkart_scraper import FlipkartReviewScraper
 
 class ScraperRegistry:
     _registry: Dict[str, Type[BaseReviewScraper]] = {
         "demo": DemoReviewScraper,
         "gsmarena": GSMArenaReviewScraper,
+        "flipkart": FlipkartReviewScraper,
     }
 
     @classmethod
