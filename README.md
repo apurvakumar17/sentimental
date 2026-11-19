@@ -4,17 +4,17 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB.svg)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38B2AC.svg)](https://tailwindcss.com/)
-[![Tests](https://img.shields.io/badge/Tests-113%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-121%20Passing-brightgreen.svg)]()
 
 > **SmartReview** is an Aspect-Based Sentiment Analysis and Product Recommendation System for Smartphone Reviews.
-> This repository contains Phase 1 (Review Collection & Web Scraping), Phase 2 (Data Quality & Kaggle Ingestion), Phase 3 (Aspect-Based Sentiment Analysis — ABSA), and Phase 4 (Multi-Criteria Product Recommendation & Comparison).
+> This repository contains Phase 1 (Review Collection & Web Scraping from GSM Arena and Flipkart), Phase 2 (Data Quality & Kaggle Ingestion), Phase 3 (Aspect-Based Sentiment Analysis — ABSA), and Phase 4 (Multi-Criteria Product Recommendation & Comparison).
 
 ---
 
 ## 1. Scope & Boundaries
 
 ### What The System Does
-- Collects structured smartphone reviews from permitted demo fixtures and production public review sources (GSM Arena).
+- Collects structured smartphone reviews from permitted demo fixtures and production public review sources (GSM Arena and Flipkart).
 - Normalizes text safely (Unicode NFKC, entity unescaping, whitespace collapsing) while strictly preserving casing, punctuation, and all words for future NLP processing.
 - Executes a **3-Tier Deduplication Strategy** (External Review ID → Review Permalink URL → Deterministic Content Hash).
 - Enforces ethical scraping policies (polite delays with jitter, timeouts, bounded retries with backoff, identifiable `User-Agent`, `robots.txt` awareness, page & review limits, zero anti-bot/CAPTCHA evasion).
@@ -53,17 +53,17 @@ Modules 5–8: Model Evaluation, Multi-Criteria Scoring, & Recommendation Engine
 
 ### Scraper Class Hierarchy
 ```
-                      +-----------------------------+
-                      |      BaseReviewScraper      |
-                      |  (Abstract Base Class - ABC)|
-                      +-----------------------------+
-                                     │
-          ┌──────────────────────────┴──────────────────────────┐
-          ▼                                                     ▼
-+--------------------------+                         +--------------------------+
-|    DemoReviewScraper     |                         |  GSMArenaReviewScraper   |
-| (Local HTML Fixtures)    |                         | (Public Source Adapter)  |
-+--------------------------+                         +--------------------------+
+                                   +-----------------------------+
+                                   |      BaseReviewScraper      |
+                                   |  (Abstract Base Class - ABC)|
+                                   +-----------------------------+
+                                                  │
+          ┌───────────────────────────────────────┼───────────────────────────────────────┐
+          ▼                                       ▼                                       ▼
++--------------------------+            +--------------------------+            +--------------------------+
+|    DemoReviewScraper     |            |  GSMArenaReviewScraper   |            |  FlipkartReviewScraper   |
+| (Local HTML Fixtures)    |            | (Public GSM Arena Source)|            | (Public Flipkart Source) |
++--------------------------+            +--------------------------+            +--------------------------+
 ```
 
 ---
