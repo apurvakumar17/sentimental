@@ -12,55 +12,73 @@ import {
   RefreshCw,
   Play,
   FileText,
-  Bookmark,
-  ChevronRight,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  Volume2,
+  Terminal,
+  Tag,
+  Wifi,
+  Zap,
+  Thermometer,
+  Fingerprint,
+  HardDrive
 } from 'lucide-react';
 import { api } from '../api/client';
 
-const SAMPLE_REVIEWS = [
-  {
-    title: 'Multi-Aspect Contrastive',
-    text: 'The camera takes excellent photos, but the battery drains too quickly.',
-  },
-  {
-    title: 'Gaming & Display Performance',
-    text: 'The 120Hz OLED display looks gorgeous and ultra bright, and the Snapdragon processor delivers blistering gaming performance with zero lag.',
-  },
-  {
-    title: 'Hardware Build & Slow Charging',
-    text: 'Premium titanium design feels great in hand, though the charging speed is quite slow.',
-  },
-  {
-    title: 'Negative Multi-Aspect',
-    text: 'Terrible battery backup and the phone gets uncomfortably hot during video recording.',
-  },
-  {
-    title: 'Neutral / No Smartphone Aspects',
-    text: 'The package arrived promptly on Tuesday in good packaging by the courier.',
-  },
-];
-
 const ASPECT_ICONS = {
   Battery: BatteryCharging,
+  Charging: Zap,
   Camera: Camera,
   Performance: Cpu,
   Design: Smartphone,
   Display: Tv,
+  'Audio & Sound': Volume2,
+  'Software & OS': Terminal,
+  'Value for Money': Tag,
+  Connectivity: Wifi,
+  Biometrics: Fingerprint,
+  'Thermal & Cooling': Thermometer,
+  Storage: HardDrive,
 };
 
 const ASPECT_COLORS = {
   Battery: 'bg-emerald-950/40 text-emerald-400 border-emerald-800/50',
+  Charging: 'bg-yellow-950/40 text-yellow-400 border-yellow-800/50',
   Camera: 'bg-sky-950/40 text-sky-400 border-sky-800/50',
   Performance: 'bg-purple-950/40 text-purple-400 border-purple-800/50',
   Design: 'bg-amber-950/40 text-amber-400 border-amber-800/50',
   Display: 'bg-teal-950/40 text-[#8BBB92] border-[#2A835F]/50',
+  'Audio & Sound': 'bg-indigo-950/40 text-indigo-400 border-indigo-800/50',
+  'Software & OS': 'bg-cyan-950/40 text-cyan-400 border-cyan-800/50',
+  'Value for Money': 'bg-emerald-950/40 text-emerald-300 border-emerald-700/50',
+  Connectivity: 'bg-blue-950/40 text-blue-400 border-blue-800/50',
+  Biometrics: 'bg-violet-950/40 text-violet-400 border-violet-800/50',
+  'Thermal & Cooling': 'bg-orange-950/40 text-orange-400 border-orange-800/50',
+  Storage: 'bg-rose-950/40 text-rose-300 border-rose-800/50',
+};
+
+const getAspectIcon = (aspect) => {
+  if (ASPECT_ICONS[aspect]) return ASPECT_ICONS[aspect];
+  const lower = (aspect || '').toLowerCase();
+  if (lower.includes('sound') || lower.includes('audio') || lower.includes('speaker')) return Volume2;
+  if (lower.includes('charg') || lower.includes('battery')) return Zap;
+  if (lower.includes('cam') || lower.includes('photo')) return Camera;
+  if (lower.includes('screen') || lower.includes('display')) return Tv;
+  if (lower.includes('heat') || lower.includes('temp') || lower.includes('cool')) return Thermometer;
+  if (lower.includes('soft') || lower.includes('os') || lower.includes('ui')) return Terminal;
+  if (lower.includes('net') || lower.includes('wifi') || lower.includes('5g')) return Wifi;
+  if (lower.includes('price') || lower.includes('value') || lower.includes('money')) return Tag;
+  return Sparkles;
+};
+
+const getAspectColorClass = (aspect) => {
+  if (ASPECT_COLORS[aspect]) return ASPECT_COLORS[aspect];
+  return 'bg-[#12544F]/40 text-[#8BBB92] border-[#2A835F]/50';
 };
 
 export default function AbsaDashboard({ products = [], onNavigateToReviews }) {
   // Live text analyzer state
-  const [inputText, setInputText] = useState(SAMPLE_REVIEWS[0].text);
+  const [inputText, setInputText] = useState('The camera takes excellent photos, but the battery drains too quickly.');
   const [analysisResult, setAnalysisResult] = useState(null);
   const [isAnalyzingText, setIsAnalyzingText] = useState(false);
   const [textError, setTextError] = useState(null);
@@ -123,9 +141,6 @@ export default function AbsaDashboard({ products = [], onNavigateToReviews }) {
             <Sparkles className="w-6 h-6 text-[#8BBB92]" />
             <span>Aspect-Based Sentiment Analysis (ABSA)</span>
           </h1>
-          <p className="text-sm text-[#7ea698] leading-relaxed">
-            Identifies smartphone aspects (<strong className="text-white">Battery</strong>, <strong className="text-white">Camera</strong>, <strong className="text-white">Performance</strong>, <strong className="text-white">Design</strong>, <strong className="text-white">Display</strong>) discussed in reviews and predicts polarity (<strong className="text-emerald-400">Positive</strong>, <strong className="text-rose-400">Negative</strong>, <strong className="text-sky-400">Neutral</strong>) per aspect.
-          </p>
         </div>
       </div>
 
@@ -147,8 +162,8 @@ export default function AbsaDashboard({ products = [], onNavigateToReviews }) {
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              rows={5}
-              placeholder="Type or paste any smartphone review text here (e.g., 'The camera takes excellent photos, but the battery drains too quickly.')..."
+              rows={7}
+              placeholder="Type or paste any smartphone review text here..."
               className="w-full bg-[#030c0e] border border-[#12544F]/70 rounded-xl p-3.5 text-xs sm:text-sm text-white placeholder-[#649182] focus:outline-none focus:border-[#2A835F] focus:ring-1 focus:ring-[#2A835F] transition-all resize-none font-sans leading-relaxed"
             />
 
@@ -186,39 +201,6 @@ export default function AbsaDashboard({ products = [], onNavigateToReviews }) {
               </button>
             </div>
           </div>
-
-          {/* Quick Test Samples */}
-          <div className="rounded-2xl border border-[#12544F]/60 bg-[#071b1f]/90 p-5 backdrop-blur-md shadow-xl">
-            <h4 className="text-xs font-bold text-[#8BBB92] uppercase tracking-wider mb-2.5 flex items-center space-x-1.5">
-              <Bookmark className="w-3.5 h-3.5" />
-              <span>Quick Test Benchmarks</span>
-            </h4>
-            <p className="text-xs text-[#649182] mb-3">
-              Click any scenario below to populate and run the model immediately:
-            </p>
-            <div className="space-y-2">
-              {SAMPLE_REVIEWS.map((sample, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setInputText(sample.text);
-                    setTextError(null);
-                  }}
-                  className="w-full text-left p-2.5 rounded-xl bg-[#030c0e]/80 border border-[#12544F]/40 hover:border-[#2A835F]/60 hover:bg-[#12544F]/20 transition-all group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white group-hover:text-[#8BBB92] transition-colors">
-                      {sample.title}
-                    </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-[#649182] group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                  <p className="text-[11px] text-[#7ea698] mt-1 line-clamp-1 italic">
-                    "{sample.text}"
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Right Column: Output & Detected Aspects */}
@@ -251,7 +233,7 @@ export default function AbsaDashboard({ products = [], onNavigateToReviews }) {
                   <Info className="w-8 h-8 text-[#649182] mx-auto" />
                   <p className="text-xs font-semibold text-[#8BBB92]">No prediction generated yet</p>
                   <p className="text-[11px] text-[#649182] max-w-sm mx-auto">
-                    Click <strong>Analyze Review</strong> or choose one of the sample benchmarks on the left to inspect aspect detections and sentiment scores.
+                    Click <strong>Analyze Review</strong> to inspect aspect detections and sentiment scores.
                   </p>
                 </div>
               )}
@@ -267,13 +249,13 @@ export default function AbsaDashboard({ products = [], onNavigateToReviews }) {
                         <span>No Supported Smartphone Aspects Detected</span>
                       </div>
                       <p className="text-[11px] text-[#7ea698] leading-relaxed">
-                        This review does not explicitly mention any of the 5 canonical smartphone aspects: <strong>Battery</strong>, <strong>Camera</strong>, <strong>Performance</strong>, <strong>Design</strong>, or <strong>Display</strong>. The system gracefully returns no aspect rather than fabricating an unsubstantiated polarity label.
+                        This review does not contain identifiable smartphone features or evaluative aspect statements. The engine gracefully returns no aspect rather than fabricating an unsubstantiated polarity label.
                       </p>
                     </div>
                   ) : (
                     analysisResult.detected_aspects.map((aspectRes, i) => {
-                      const Icon = ASPECT_ICONS[aspectRes.aspect] || Smartphone;
-                      const colorClass = ASPECT_COLORS[aspectRes.aspect] || '';
+                      const Icon = getAspectIcon(aspectRes.aspect);
+                      const colorClass = getAspectColorClass(aspectRes.aspect);
                       return (
                         <div
                           key={i}

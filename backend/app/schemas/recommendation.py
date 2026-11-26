@@ -2,7 +2,22 @@ from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field, ConfigDict
 
 
-ASPECTS_LIST = ["Battery", "Camera", "Performance", "Design", "Display"]
+ASPECTS_LIST = [
+    "Battery",
+    "Camera",
+    "Performance",
+    "Design",
+    "Display",
+    "Audio & Sound",
+    "Software & OS",
+    "Value for Money",
+    "Connectivity",
+    "Charging",
+    "Biometrics",
+    "Thermal & Cooling",
+    "Storage",
+    "Haptics",
+]
 
 
 class AspectDefinition(BaseModel):

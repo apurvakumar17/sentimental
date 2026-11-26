@@ -2,16 +2,31 @@ from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any, Literal
 from pydantic import BaseModel, Field, ConfigDict
 
-ASPECTS_LIST = ["Battery", "Camera", "Performance", "Design", "Display"]
+ASPECTS_LIST = [
+    "Battery",
+    "Camera",
+    "Performance",
+    "Design",
+    "Display",
+    "Audio & Sound",
+    "Software & OS",
+    "Value for Money",
+    "Connectivity",
+    "Charging",
+    "Biometrics",
+    "Thermal & Cooling",
+    "Storage",
+    "Haptics",
+]
 SENTIMENTS_LIST = ["Positive", "Negative", "Neutral"]
 
-AspectType = Literal["Battery", "Camera", "Performance", "Design", "Display"]
+AspectType = str
 SentimentType = Literal["Positive", "Negative", "Neutral"]
 AnnotationStatusType = Literal["UNANNOTATED", "IN_REVIEW", "VERIFIED"]
 
 
 class AspectSentimentResult(BaseModel):
-    aspect: AspectType = Field(..., description="Target smartphone aspect category")
+    aspect: str = Field(..., description="Target smartphone aspect category or feature")
     sentiment: SentimentType = Field(..., description="Predicted sentiment polarity towards the aspect")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Model prediction confidence score")
     evidence_text: Optional[str] = Field(None, description="Extracted clause or sentence supporting this prediction")

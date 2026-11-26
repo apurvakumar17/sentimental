@@ -1,33 +1,33 @@
 {
   "model_version": "absa-hybrid-v1.0",
-  "test_samples_count": 8,
-  "training_samples_count": 32,
-  "total_samples": 40,
-  "overall_accuracy": 0.75,
-  "overall_macro_f1": 0.739,
+  "test_samples_count": 13,
+  "training_samples_count": 48,
+  "total_samples": 61,
+  "overall_accuracy": 0.692,
+  "overall_macro_f1": 0.685,
   "sentiment_classification_metrics": {
-    "macro_precision": 0.867,
-    "macro_recall": 0.722,
-    "macro_f1": 0.739
+    "macro_precision": 0.717,
+    "macro_recall": 0.689,
+    "macro_f1": 0.685
   },
   "per_class_sentiment_metrics": {
     "Negative": {
-      "precision": 0.6,
-      "recall": 1.0,
-      "f1_score": 0.75,
-      "support": 3
+      "precision": 0.75,
+      "recall": 0.6,
+      "f1_score": 0.667,
+      "support": 5
     },
     "Neutral": {
-      "precision": 1.0,
-      "recall": 0.5,
-      "f1_score": 0.667,
-      "support": 2
+      "precision": 0.4,
+      "recall": 0.667,
+      "f1_score": 0.5,
+      "support": 3
     },
     "Positive": {
       "precision": 1.0,
-      "recall": 0.667,
-      "f1_score": 0.8,
-      "support": 3
+      "recall": 0.8,
+      "f1_score": 0.889,
+      "support": 5
     }
   },
   "confusion_matrix": {
@@ -39,18 +39,18 @@
     "matrix": [
       [
         3,
-        0,
+        2,
         0
       ],
       [
         1,
-        1,
+        2,
         0
       ],
       [
-        1,
         0,
-        2
+        1,
+        4
       ]
     ]
   },
@@ -59,8 +59,17 @@
     "Camera": 8,
     "Performance": 8,
     "Design": 8,
-    "Display": 8
+    "Display": 8,
+    "Audio & Sound": 5,
+    "Software & OS": 5,
+    "Value for Money": 5,
+    "Connectivity": 3,
+    "Charging": 3,
+    "Biometrics": 0,
+    "Thermal & Cooling": 0,
+    "Storage": 0,
+    "Haptics": 0
   },
-  "data_split_info": "Train: 32 samples, Test: 8 samples (20% held-out)",
-  "last_evaluated_at": "2026-11-26T15:58:30.660174+00:00"
+  "data_split_info": "Train: 48 samples, Test: 13 samples (20% held-out)",
+  "last_evaluated_at": "2026-11-26T20:02:20.186911+00:00"
 }

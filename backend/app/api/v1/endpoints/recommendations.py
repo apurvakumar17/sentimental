@@ -45,12 +45,12 @@ def get_recommendations(
 
 
 @router.get("/aspects", response_model=List[AspectDefinition], summary="Get supported smartphone aspects")
-def get_aspect_definitions():
+def get_aspect_definitions(db: Session = Depends(get_db)):
     """
-    Returns the 5 canonical smartphone aspects with definitions, domain keywords,
-    and default importance weights.
+    Returns supported smartphone aspects with definitions, domain keywords,
+    and default importance weights, combining standard categories and dynamically discovered aspects.
     """
-    return recommendation_engine.get_aspect_definitions()
+    return recommendation_engine.get_aspect_definitions(db=db)
 
 
 @router.get("/products", response_model=List[ProductSummaryItem], summary="List catalog products and recommendation eligibility")

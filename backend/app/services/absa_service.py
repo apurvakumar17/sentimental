@@ -43,10 +43,14 @@ MODEL_VERSION = "absa-hybrid-v1.0"
 # Aspect Keywords & Patterns
 ASPECT_LEXICONS: Dict[str, Set[str]] = {
     "Battery": {
-        "battery", "batteries", "charge", "charging", "charger", "chargers",
-        "drain", "drains", "draining", "drained", "mah", "backup", "endurance",
-        "sot", "screen-on", "standby", "power", "battery life", "battery-life",
-        "recharge", "watt", "watts", "fast charging", "slow charging",
+        "battery", "batteries", "backup", "endurance", "mah", "sot",
+        "screen-on", "standby", "battery life", "battery-life",
+    },
+    "Charging": {
+        "charge", "charging", "charger", "chargers", "fast charging", "fast charge",
+        "slow charging", "wireless charging", "reverse charging", "recharge",
+        "watt", "watts", "warp charge", "supervooc", "hypercharge", "pd charging",
+        "adapter", "adaptor", "power brick",
     },
     "Camera": {
         "camera", "cameras", "photo", "photos", "picture", "pictures", "pic",
@@ -54,7 +58,8 @@ ASPECT_LEXICONS: Dict[str, Set[str]] = {
         "sensor", "sensors", "zoom", "optical zoom", "telephoto", "macro",
         "wide", "ultrawide", "ultra-wide", "selfie", "selfies", "portrait",
         "portraits", "night mode", "low light", "low-light", "shutter",
-        "megapixel", "mp", "4k", "8k", "hdr", "exposure", "focus",
+        "megapixel", "mp", "4k", "8k", "hdr", "exposure", "focus", "autofocus",
+        "front camera", "rear camera", "stabilization", "ois",
     },
     "Performance": {
         "performance", "processor", "processors", "cpu", "gpu", "chip", "chips",
@@ -62,8 +67,7 @@ ASPECT_LEXICONS: Dict[str, Set[str]] = {
         "exynos", "tensor", "ram", "memory", "speed", "fast", "snappy",
         "smooth", "smoothness", "lag", "lags", "laggy", "lagging", "stutter",
         "stutters", "stuttering", "slow", "sluggish", "fps", "frame rate",
-        "framerate", "gaming", "game", "games", "multitasking", "heat",
-        "heats", "heating", "thermal", "thermals", "overheating", "warm", "throttle",
+        "framerate", "gaming", "game", "games", "multitasking", "benchmark",
     },
     "Design": {
         "design", "looks", "look", "aesthetic", "aesthetics", "build",
@@ -81,6 +85,73 @@ ASPECT_LEXICONS: Dict[str, Set[str]] = {
         "colors", "vibrant", "sharp", "sharpness", "crisp", "touch sampling",
         "bezels", "bezel", "punch hole", "notch", "outdoor visibility",
     },
+    "Audio & Sound": {
+        "speaker", "speakers", "sound", "audio", "volume", "loud", "loudness",
+        "bass", "treble", "stereo", "dual speakers", "stereo speakers",
+        "headphone", "headphone jack", "3.5mm", "earpiece", "microphone",
+        "mic", "dolby atmos", "sound quality", "audio quality", "music",
+        "ringtone", "speakerphone", "clarity",
+    },
+    "Software & OS": {
+        "software", "os", "operating system", "ui", "user interface", "android",
+        "ios", "hyperos", "miui", "oneui", "one ui", "oxygenos", "coloros",
+        "realmeui", "funtouch", "stock android", "bloatware", "adware",
+        "update", "updates", "patch", "security patch", "customization",
+        "bugs", "buggy", "glitches", "smooth os",
+    },
+    "Value for Money": {
+        "price", "pricing", "value", "worth", "money", "cost", "costly",
+        "expensive", "budget", "affordable", "cheap", "overpriced",
+        "value for money", "vfm", "pocket friendly", "bang for buck",
+        "deal", "worth the money", "worth it", "waste of money",
+    },
+    "Connectivity": {
+        "connectivity", "5g", "4g", "lte", "network", "reception", "signal",
+        "wifi", "wi-fi", "bluetooth", "cellular", "sim", "dual sim",
+        "esim", "e-sim", "hotspot", "gps", "nfc", "call quality", "calls",
+    },
+    "Biometrics": {
+        "fingerprint", "finger print", "face unlock", "facial recognition",
+        "biometrics", "in-display fingerprint", "scanner", "optical sensor",
+    },
+    "Thermal & Cooling": {
+        "heat", "heats", "heating", "warm", "hot", "overheating", "overheat",
+        "thermal", "thermals", "cooling", "vapor chamber", "throttling",
+        "throttle", "temperature",
+    },
+    "Storage": {
+        "storage", "internal storage", "rom", "128gb", "256gb", "512gb",
+        "1tb", "microsd", "sd card", "memory card", "expandable", "capacity",
+    },
+    "Haptics": {
+        "haptic", "haptics", "haptic feedback", "vibration", "vibration motor",
+        "tactile", "tactile feedback",
+    },
+    "Water Resistance": {
+        "water resistance", "waterproof", "water proof", "water resistant",
+        "ip68", "ip67", "splash proof", "splash resistant",
+    },
+    "Accessories": {
+        "accessories", "accessory", "back cover", "free case", "case in box",
+        "earphones", "earbuds", "stylus", "s-pen", "s pen",
+    },
+}
+
+# Open dynamic aspect patterns for words not in the predefined lexicon
+OPEN_ASPECT_DIRECT_PATTERNS: Dict[str, str] = {
+    "Flashlight": r"\b(flashlight|torch light|torch)\b",
+    "Customer Service": r"\b(customer service|customer support|warranty support|after sales service)\b",
+    "SIM & Storage Tray": r"\b(sim tray|dual sim tray|sim slot|micro sd slot)\b",
+}
+
+# Non-aspect stopwords to prevent false aspect extractions
+NON_ASPECT_WORDS: Set[str] = {
+    "phone", "phones", "device", "devices", "mobile", "mobiles", "product", "products",
+    "item", "items", "unit", "units", "one", "thing", "things", "lot", "way", "delivery",
+    "courier", "package", "packaging", "box", "taped", "seller", "amazon", "flipkart",
+    "time", "times", "day", "days", "week", "weeks", "month", "months", "year", "years",
+    "purchase", "buy", "order", "ordered", "today", "yesterday", "tomorrow", "use",
+    "user", "review", "opinion", "money", "person", "people", "brand", "model",
 }
 
 # Sentiment Lexicon & Valences
@@ -161,6 +232,37 @@ SEED_BENCHMARK_DATA: List[Dict[str, Any]] = [
     {"text": "Annoying green tint on the screen at low brightness levels.", "aspect": "Display", "sentiment": "Negative"},
     {"text": "Features a 6.7 inch OLED screen with 1080p resolution.", "aspect": "Display", "sentiment": "Neutral"},
     {"text": "The display has a center hole punch cutout for the front camera.", "aspect": "Display", "sentiment": "Neutral"},
+
+    # Audio & Sound examples
+    {"text": "The stereo speakers are remarkably loud, clear, and deliver rich bass.", "aspect": "Audio & Sound", "sentiment": "Positive"},
+    {"text": "Crystal clear call quality and excellent microphone noise cancellation.", "aspect": "Audio & Sound", "sentiment": "Positive"},
+    {"text": "Audio from the speaker sounds tinny, muffled, and distorts at high volume.", "aspect": "Audio & Sound", "sentiment": "Negative"},
+    {"text": "Disappointed that there is no 3.5mm headphone jack on this model.", "aspect": "Audio & Sound", "sentiment": "Negative"},
+    {"text": "It includes dual bottom-firing speakers and standard Bluetooth 5.3 audio.", "aspect": "Audio & Sound", "sentiment": "Neutral"},
+
+    # Software & OS examples
+    {"text": "Clean bloatware-free software with intuitive gestures and smooth animations.", "aspect": "Software & OS", "sentiment": "Positive"},
+    {"text": "Timely software updates and a lightweight user interface.", "aspect": "Software & OS", "sentiment": "Positive"},
+    {"text": "Buggy UI packed with annoying adware and unwanted pre-installed apps.", "aspect": "Software & OS", "sentiment": "Negative"},
+    {"text": "The latest OS update introduced frequent app crashes and interface freezes.", "aspect": "Software & OS", "sentiment": "Negative"},
+    {"text": "Ships with Android 14 out of the box with guaranteed two years of OS updates.", "aspect": "Software & OS", "sentiment": "Neutral"},
+
+    # Value for Money examples
+    {"text": "Incredible value for money, offers flagship tier specs at a mid-range price.", "aspect": "Value for Money", "sentiment": "Positive"},
+    {"text": "Unbeatable pricing for the hardware offered, absolute bang for buck.", "aspect": "Value for Money", "sentiment": "Positive"},
+    {"text": "Way overpriced for what it provides, terrible value compared to competitors.", "aspect": "Value for Money", "sentiment": "Negative"},
+    {"text": "Waste of hard earned money, definitely not worth the premium retail price.", "aspect": "Value for Money", "sentiment": "Negative"},
+    {"text": "Priced competitively within the sub-$400 budget smartphone bracket.", "aspect": "Value for Money", "sentiment": "Neutral"},
+
+    # Connectivity examples
+    {"text": "Blazing fast 5G speeds with excellent cellular reception and rock-solid WiFi.", "aspect": "Connectivity", "sentiment": "Positive"},
+    {"text": "Frequent call drops and very weak mobile network signal in indoor areas.", "aspect": "Connectivity", "sentiment": "Negative"},
+    {"text": "Supports dual SIM 5G standby, WiFi 6, and NFC for contactless payments.", "aspect": "Connectivity", "sentiment": "Neutral"},
+
+    # Charging examples
+    {"text": "Super fast 80W charging fills the battery from empty to 100% in 25 minutes.", "aspect": "Charging", "sentiment": "Positive"},
+    {"text": "Frustratingly slow charging speed, takes over two hours to reach full capacity.", "aspect": "Charging", "sentiment": "Negative"},
+    {"text": "Supports 33W wired charging and does not include wireless charging.", "aspect": "Charging", "sentiment": "Neutral"},
 ]
 
 SEED_BENCHMARK_DATASET = SEED_BENCHMARK_DATA
@@ -216,7 +318,8 @@ class ABSAEngine:
 
     def detect_aspects(self, text: str) -> List[Tuple[str, str]]:
         """
-        Detects which of the 5 canonical smartphone aspects are discussed in text.
+        Detects all discussed smartphone aspects and hardware/software features in text.
+        Supports full open/dynamic aspect extraction beyond fixed categories.
         Returns a list of (aspect_name, evidence_clause) tuples.
         """
         if not text or not text.strip():
@@ -225,7 +328,6 @@ class ABSAEngine:
         norm_text = safe_normalize_text(text)
         
         # Split text into sentence/clause segments
-        # Splits on period, exclamation, question mark, semicolon, and contrastive markers
         clause_delimiters = r"[.!?;:]|\b(?:but|however|although|though|whereas|yet|while|and)\b"
         raw_clauses = re.split(clause_delimiters, norm_text, flags=re.IGNORECASE)
         clauses = [c.strip() for c in raw_clauses if len(c.strip()) > 3]
@@ -234,11 +336,11 @@ class ABSAEngine:
 
         detected_aspects_map: Dict[str, List[str]] = {}
 
+        # 1. Match against domain taxonomy lexicons
         for aspect_name, keywords in ASPECT_LEXICONS.items():
             matching_clauses: List[str] = []
             for clause in clauses:
                 tokens = set(re.findall(r"\b[a-z0-9\-]+\b", clause.lower()))
-                # Check for single-word or multi-word keyword hits
                 for kw in keywords:
                     if " " in kw:
                         if kw in clause.lower():
@@ -250,15 +352,61 @@ class ABSAEngine:
                             break
 
             if matching_clauses:
-                # Merge relevant clauses as evidence
                 combined_evidence = " ... ".join(matching_clauses[:2])
                 detected_aspects_map[aspect_name] = combined_evidence
 
-        # Return list of detected aspects in canonical order
+        # 2. Match direct open aspect patterns (e.g. Flashlight, Customer Service)
+        for aspect_name, pattern in OPEN_ASPECT_DIRECT_PATTERNS.items():
+            if aspect_name not in detected_aspects_map:
+                for clause in clauses:
+                    if re.search(pattern, clause, flags=re.IGNORECASE):
+                        detected_aspects_map[aspect_name] = clause
+                        break
+
+        # 3. Dynamic candidate noun extraction for novel aspects
+        # Look for opinion-target pairs like "the <noun> is <adj>" or "<adj> <noun>"
+        # Only when no other aspect was already extracted from that clause
+        for clause in clauses:
+            clause_lower = clause.lower()
+            # Pattern: <noun> (is|was|feels|seems) (very|quite|really)? <sentiment_adj>
+            adj_tokens = r"(?:good|great|excellent|amazing|awesome|superb|impressive|decent|bad|terrible|horrible|awful|poor|slow|fast|loud|quiet|sharp|blurry|sturdy|fragile|durable)"
+            target_matches = re.findall(
+                rf"\b([a-z]{{3,15}})\s+(?:is|was|are|were|feels|seems|looks)\s+(?:very\s+|quite\s+|super\s+)?{adj_tokens}\b",
+                clause_lower
+            )
+            # Pattern: <sentiment_adj> <noun>
+            attrib_matches = re.findall(
+                rf"\b{adj_tokens}\s+([a-z]{{3,15}})\b",
+                clause_lower
+            )
+            candidates = set(target_matches + attrib_matches)
+            for cand in candidates:
+                if cand not in NON_ASPECT_WORDS and len(cand) >= 4:
+                    # Title-case candidate
+                    cand_aspect = cand.capitalize()
+                    # Check if already covered by an existing aspect
+                    already_covered = any(
+                        cand in [kw.lower() for kw in kws]
+                        for kws in ASPECT_LEXICONS.values()
+                    )
+                    if not already_covered and cand_aspect not in detected_aspects_map:
+                        detected_aspects_map[cand_aspect] = clause
+
+        # Return list of detected aspects: canonical aspects first, then any open dynamic aspects
         results: List[Tuple[str, str]] = []
+        seen: Set[str] = set()
+
+        # Preferred ordering for standard aspects
         for aspect in ASPECTS_LIST:
-            if aspect in detected_aspects_map:
+            if aspect in detected_aspects_map and aspect not in seen:
                 results.append((aspect, detected_aspects_map[aspect]))
+                seen.add(aspect)
+
+        # Add any dynamically discovered open aspects
+        for aspect, evidence in detected_aspects_map.items():
+            if aspect not in seen:
+                results.append((aspect, evidence))
+                seen.add(aspect)
 
         return results
 

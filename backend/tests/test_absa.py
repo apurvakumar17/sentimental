@@ -6,7 +6,7 @@ from backend.app.services.absa_service import absa_engine, ASPECT_LEXICONS, SEED
 
 
 def test_aspect_detection_all_five_aspects():
-    """Verify that all five canonical aspects are detected when mentioned."""
+    """Verify that all core smartphone aspects are detected when mentioned."""
     sample = (
         "The battery life lasts all day, and the camera takes crisp photos. "
         "The Snapdragon processor delivers fast gaming performance. "
@@ -20,7 +20,20 @@ def test_aspect_detection_all_five_aspects():
     assert "Performance" in aspect_names
     assert "Design" in aspect_names
     assert "Display" in aspect_names
-    assert len(aspect_names) == 5
+    assert len(aspect_names) >= 5
+
+
+def test_dynamic_and_extended_aspect_detection():
+    """Verify that extended categories and open-vocabulary noun aspects are dynamically extracted."""
+    sample = "The dual stereo speakers sound incredibly loud, and 5G network connectivity is very fast."
+    detected = absa_engine.detect_aspects(sample)
+    aspect_names = [asp for asp, _ in detected]
+    assert "Audio & Sound" in aspect_names or "Audio" in aspect_names or "Connectivity" in aspect_names
+
+    # Test open-vocabulary dynamic candidate extraction
+    open_sample = "The cooling chamber keeps the temperature cold during long usage."
+    open_res = absa_engine.predict_text(open_sample)
+    assert len(open_res) >= 1
 
 
 def test_aspect_detection_no_aspects():
@@ -168,8 +181,9 @@ def test_api_model_status_and_metrics(client):
     assert status_resp.status_code == 200
     status_data = status_resp.json()
     assert "available_aspects" in status_data
-    assert len(status_data["available_aspects"]) == 5
+    assert len(status_data["available_aspects"]) >= 5
     assert "Battery" in status_data["available_aspects"]
+    assert "Camera" in status_data["available_aspects"]
 
     metrics_resp = client.get("/api/v1/absa/metrics")
     assert metrics_resp.status_code == 200

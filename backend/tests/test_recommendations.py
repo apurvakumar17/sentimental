@@ -84,13 +84,29 @@ def test_aspect_definitions_endpoint(client):
     resp = client.get("/api/v1/recommendations/aspects")
     assert resp.status_code == 200
     data = resp.json()
-    assert len(data) == 5
+    assert len(data) >= 5
     aspect_names = [item["aspect"] for item in data]
     assert "Battery" in aspect_names
     assert "Camera" in aspect_names
     assert "Performance" in aspect_names
     assert "Design" in aspect_names
     assert "Display" in aspect_names
+    assert "Audio & Sound" in aspect_names
+    assert "Software & OS" in aspect_names
+
+
+def test_custom_and_open_aspect_priorities(client, recommendation_fixtures):
+    """Verify recommendation ranking accepts and scores open/custom aspect priorities."""
+    req = {
+        "priorities": ["Audio & Sound", "Camera"],
+        "min_price": 300.0,
+        "max_price": 600.0,
+    }
+    resp = client.post("/api/v1/recommendations", json=req)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["matched_products_count"] >= 1
+    assert "Audio & Sound" in data["priorities_evaluated"]
 
 
 def test_budget_filtering(client, recommendation_fixtures):

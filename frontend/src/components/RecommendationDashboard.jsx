@@ -23,24 +23,62 @@ import {
   BarChart3,
   ExternalLink,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Volume2,
+  Terminal,
+  Tag,
+  Wifi,
+  Zap,
+  Thermometer,
+  Fingerprint,
+  HardDrive
 } from 'lucide-react';
 import { api } from '../api/client';
 
 const ASPECT_ICONS = {
   Battery: BatteryCharging,
+  Charging: Zap,
   Camera: Camera,
   Performance: Cpu,
   Design: Smartphone,
   Display: Tv,
+  'Audio & Sound': Volume2,
+  'Software & OS': Terminal,
+  'Value for Money': Tag,
+  Connectivity: Wifi,
+  Biometrics: Fingerprint,
+  'Thermal & Cooling': Thermometer,
+  Storage: HardDrive,
+};
+
+const getAspectIcon = (aspect) => {
+  if (ASPECT_ICONS[aspect]) return ASPECT_ICONS[aspect];
+  const lower = (aspect || '').toLowerCase();
+  if (lower.includes('sound') || lower.includes('audio') || lower.includes('speaker')) return Volume2;
+  if (lower.includes('charg') || lower.includes('battery')) return Zap;
+  if (lower.includes('cam') || lower.includes('photo')) return Camera;
+  if (lower.includes('screen') || lower.includes('display')) return Tv;
+  if (lower.includes('heat') || lower.includes('temp') || lower.includes('cool')) return Thermometer;
+  if (lower.includes('soft') || lower.includes('os') || lower.includes('ui')) return Terminal;
+  if (lower.includes('net') || lower.includes('wifi') || lower.includes('5g')) return Wifi;
+  if (lower.includes('price') || lower.includes('value') || lower.includes('cost')) return Tag;
+  return Tag;
 };
 
 const ASPECT_COLORS = {
   Battery: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+  Charging: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
   Camera: 'text-sky-400 bg-sky-500/10 border-sky-500/30',
   Performance: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
   Design: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
   Display: 'text-pink-400 bg-pink-500/10 border-pink-500/30',
+  'Audio & Sound': 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30',
+  'Software & OS': 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
+  'Value for Money': 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30',
+  Connectivity: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
+  Biometrics: 'text-violet-400 bg-violet-500/10 border-violet-500/30',
+  'Thermal & Cooling': 'text-orange-400 bg-orange-500/10 border-orange-500/30',
+  Storage: 'text-rose-300 bg-rose-500/10 border-rose-500/30',
 };
 
 const PRESET_QUICK_FILTERS = [
@@ -90,6 +128,11 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
   const [priorities, setPriorities] = useState(['Camera', 'Battery', 'Performance']);
   const [minEvidence, setMinEvidence] = useState(1);
   const [availableBrands, setAvailableBrands] = useState([]);
+  const [availableAspects, setAvailableAspects] = useState([
+    'Battery', 'Camera', 'Performance', 'Design', 'Display',
+    'Audio & Sound', 'Software & OS', 'Value for Money', 'Connectivity',
+    'Charging', 'Biometrics', 'Thermal & Cooling', 'Storage', 'Haptics'
+  ]);
 
   // Results & Loading
   const [recommendationsData, setRecommendationsData] = useState(null);
@@ -111,9 +154,10 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState(null);
 
-  // Fetch initial products and brand catalog
+  // Fetch initial products, aspects, and brand catalog
   useEffect(() => {
     loadBrandCatalog();
+    loadAspectDefinitions();
     handleFetchRecommendations();
   }, []);
 
@@ -128,6 +172,17 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
       }
     } catch (err) {
       console.error('Failed to load recommendation catalog brands:', err);
+    }
+  };
+
+  const loadAspectDefinitions = async () => {
+    try {
+      const defs = await api.getRecommendationAspects();
+      if (Array.isArray(defs) && defs.length > 0) {
+        setAvailableAspects(defs.map((d) => d.aspect));
+      }
+    } catch (err) {
+      console.error('Failed to load recommendation aspects:', err);
     }
   };
 
@@ -263,8 +318,6 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
       setIsSyncing(false);
     }
   };
-
-  const allAspects = ['Battery', 'Camera', 'Performance', 'Design', 'Display'];
 
   const getScoreColor = (score) => {
     if (score === null || score === undefined) return 'text-zinc-500';
@@ -495,11 +548,11 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
               </div>
 
               {/* Add other aspects if any missing */}
-              {allAspects.some((a) => !priorities.includes(a)) && (
+              {availableAspects.some((a) => !priorities.includes(a)) && (
                 <div className="pt-1">
                   <span className="text-[10px] text-[#649182] block mb-1">Add additional aspect:</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {allAspects
+                  <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto no-scrollbar pr-1">
+                    {availableAspects
                       .filter((a) => !priorities.includes(a))
                       .map((asp) => (
                         <button
@@ -739,97 +792,19 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Overall Score Badge */}
-                  <div className="flex items-center sm:flex-col items-end shrink-0 gap-2 sm:gap-1 bg-[#030c0e]/80 sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-[#12544F]/40">
-                    <div className="text-right">
-                      <span className="text-[11px] text-[#649182] uppercase tracking-wider block font-semibold">
-                        Overall Score
-                      </span>
-                      <div className="flex items-baseline space-x-1">
-                        <span className={`text-2xl sm:text-3xl font-black ${getScoreColor(item.overall_score)}`}>
-                          {item.overall_score !== null ? item.overall_score : 'N/A'}
-                        </span>
-                        <span className="text-xs text-[#649182] font-bold">/ 100</span>
-                      </div>
+                {/* Paragraph-Based Recommendation Assessment */}
+                <div className="py-4 space-y-2">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#030c0e]/95 border border-[#12544F]/60 shadow-inner space-y-2.5">
+                    <div className="flex items-center space-x-2 text-xs font-bold text-[#8BBB92] uppercase tracking-wider">
+                      <Sparkles className="w-4 h-4 text-[#8BBB92]" />
+                      <span>Recommendation Assessment & Review Consensus</span>
                     </div>
+                    <p className="text-xs sm:text-sm text-[#e3f4ec] leading-relaxed font-sans">
+                      {item.explanation}
+                    </p>
                   </div>
-                </div>
-
-                {/* Aspect Scores Grid */}
-                <div className="py-4 space-y-2.5">
-                  <span className="text-xs font-bold text-[#8BBB92] uppercase tracking-wider block">
-                    Aspect-Level Performance
-                  </span>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5">
-                    {allAspects.map((asp) => {
-                      const Icon = ASPECT_ICONS[asp] || Smartphone;
-                      const aspItem = item.aspect_scores[asp];
-                      const isAvail = aspItem && aspItem.is_available && aspItem.score !== null;
-                      const scoreVal = isAvail ? aspItem.score : null;
-                      const isUserPriority = priorities.includes(asp);
-
-                      return (
-                        <div
-                          key={asp}
-                          className={`p-2.5 rounded-xl border transition-all ${
-                            isUserPriority
-                              ? 'bg-[#030c0e] border-[#2A835F]/60 shadow-sm'
-                              : 'bg-[#030c0e]/60 border-[#12544F]/40'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1.5">
-                            <div className="flex items-center space-x-1.5">
-                              <Icon className="w-3.5 h-3.5 text-[#8BBB92]" />
-                              <span className="text-xs font-semibold text-white">{asp}</span>
-                            </div>
-                            {isUserPriority && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#8BBB92]" title="User Priority" />
-                            )}
-                          </div>
-
-                          {isAvail ? (
-                            <div className="space-y-1.5">
-                              <div className="flex items-baseline justify-between">
-                                <span className={`text-base font-extrabold ${getScoreColor(scoreVal)}`}>
-                                  {scoreVal}
-                                </span>
-                                <span className="text-[10px] text-[#649182]">
-                                  n={aspItem.evidence_count}
-                                </span>
-                              </div>
-                              {/* Mini Score Progress Bar */}
-                              <div className="w-full bg-[#071b1f] h-1.5 rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full transition-all duration-500 ${getScoreBgColor(scoreVal)}`}
-                                  style={{ width: `${Math.min(Math.max(scoreVal, 0), 100)}%` }}
-                                />
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="py-1">
-                              <span className="text-[10px] text-zinc-500 block italic leading-tight">
-                                Unavailable
-                              </span>
-                              <span className="text-[9px] text-zinc-600">No ABSA data</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Natural Language Recommendation Explanation */}
-                <div className="p-3.5 rounded-xl bg-[#030c0e]/90 border border-[#12544F]/50 space-y-1.5">
-                  <div className="flex items-center space-x-2 text-xs font-bold text-[#8BBB92]">
-                    <Sparkles className="w-3.5 h-3.5 text-[#8BBB92]" />
-                    <span>Why This Phone Matches Your Preferences</span>
-                  </div>
-                  <p className="text-xs text-[#f2fbf6] leading-relaxed">
-                    {item.explanation}
-                  </p>
                 </div>
 
                 {/* Strengths & Weaknesses Badges */}
@@ -958,16 +933,10 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
                       {p.brand}
                     </span>
                     <h4 className="text-sm font-bold text-white leading-tight">{p.product_name}</h4>
-                    <div className="flex items-center justify-between pt-1">
+                    <div className="pt-1">
                       <span className="text-xs font-semibold text-emerald-400">
                         {p.price_usd ? `$${Math.round(p.price_usd)} USD` : 'Price N/A'}
                       </span>
-                      <div className="flex items-baseline space-x-1">
-                        <span className="text-xs text-[#649182]">Score:</span>
-                        <span className={`text-sm font-black ${getScoreColor(p.overall_score)}`}>
-                          {p.overall_score !== null ? p.overall_score : '—'}
-                        </span>
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -988,59 +957,71 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#12544F]/30">
-                    {allAspects.map((asp) => {
-                      const Icon = ASPECT_ICONS[asp] || Smartphone;
-                      const winnerName = comparisonData.aspect_winners[asp];
-
-                      return (
-                        <tr key={asp} className="hover:bg-[#12544F]/10 transition-colors">
-                          <td className="py-3 px-4 font-semibold text-white flex items-center space-x-2">
-                            <Icon className="w-4 h-4 text-[#8BBB92]" />
-                            <span>{asp}</span>
-                          </td>
-                          {comparisonData.products.map((p) => {
-                            const aspScore = p.aspect_scores[asp];
-                            const isWinner = winnerName && winnerName === p.product_name;
-
-                            return (
-                              <td key={p.product_id} className="py-3 px-4">
-                                {aspScore && aspScore.is_available && aspScore.score !== null ? (
-                                  <div className="space-y-1">
-                                    <div className="flex items-center space-x-1.5">
-                                      <span className={`font-bold ${getScoreColor(aspScore.score)}`}>
-                                        {aspScore.score}/100
-                                      </span>
-                                      {isWinner && (
-                                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                                          BEST
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center space-x-2 text-[10px] text-[#649182]">
-                                      <span>n={aspScore.evidence_count} reviews</span>
-                                      <span className="text-emerald-400">+{aspScore.positive_count}</span>
-                                      <span className="text-zinc-400">~{aspScore.neutral_count}</span>
-                                      <span className="text-rose-400">-{aspScore.negative_count}</span>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <span className="text-zinc-600 italic">Unavailable</span>
-                                )}
-                              </td>
-                            );
-                          })}
-                          <td className="py-3 px-4 text-center">
-                            {winnerName ? (
-                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#2A835F]/20 text-[#8BBB92] border border-[#2A835F]/40">
-                                {winnerName}
-                              </span>
-                            ) : (
-                              <span className="text-zinc-600">—</span>
-                            )}
-                          </td>
-                        </tr>
+                    {(() => {
+                      const compAspects = Array.from(
+                        new Set([
+                          ...priorities,
+                          ...comparisonData.products.flatMap((p) =>
+                            Object.keys(p.aspect_scores || {}).filter((k) => p.aspect_scores[k]?.is_available)
+                          ),
+                          ...availableAspects.slice(0, 8),
+                        ])
                       );
-                    })}
+
+                      return compAspects.map((asp) => {
+                        const Icon = getAspectIcon(asp);
+                        const winnerName = comparisonData.aspect_winners[asp];
+
+                        return (
+                          <tr key={asp} className="hover:bg-[#12544F]/10 transition-colors">
+                            <td className="py-3 px-4 font-semibold text-white flex items-center space-x-2">
+                              <Icon className="w-4 h-4 text-[#8BBB92]" />
+                              <span>{asp}</span>
+                            </td>
+                            {comparisonData.products.map((p) => {
+                              const aspScore = p.aspect_scores[asp];
+                              const isWinner = winnerName && winnerName === p.product_name;
+
+                              return (
+                                <td key={p.product_id} className="py-3 px-4">
+                                  {aspScore && aspScore.is_available && aspScore.score !== null ? (
+                                    <div className="space-y-1">
+                                      <div className="flex items-center space-x-1.5">
+                                        <span className={`font-bold ${getScoreColor(aspScore.score)}`}>
+                                          {aspScore.score >= 68 ? 'Highly Favorable' : aspScore.score >= 52 ? 'Favorable' : 'Mixed Feedback'}
+                                        </span>
+                                        {isWinner && (
+                                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                            BEST
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center space-x-2 text-[10px] text-[#649182]">
+                                        <span>n={aspScore.evidence_count} reviews</span>
+                                        <span className="text-emerald-400">+{aspScore.positive_count}</span>
+                                        <span className="text-zinc-400">~{aspScore.neutral_count}</span>
+                                        <span className="text-rose-400">-{aspScore.negative_count}</span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span className="text-zinc-600 italic">Unavailable</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                            <td className="py-3 px-4 text-center">
+                              {winnerName ? (
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#2A835F]/20 text-[#8BBB92] border border-[#2A835F]/40">
+                                  {winnerName}
+                                </span>
+                              ) : (
+                                <span className="text-zinc-600">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
                   </tbody>
                 </table>
               </div>

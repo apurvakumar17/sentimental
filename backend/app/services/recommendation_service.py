@@ -31,31 +31,191 @@ BAYESIAN_PRIOR_MEAN = 50.0
 
 ASPECT_META: Dict[str, Dict[str, Any]] = {
     "Battery": {
-        "description": "Battery longevity, charging rate, daily endurance, and screen-on time.",
-        "keywords": ["battery", "charging", "drain", "backup", "mAh", "endurance", "fast charge"],
+        "description": "Battery longevity, daily endurance, screen-on time, and drain rate.",
+        "keywords": ["battery", "backup", "drain", "mah", "endurance", "longevity", "sot"],
         "default_weight": 2.0,
     },
+    "Charging": {
+        "description": "Charging speed, wired fast charging wattage, wireless charging, and charger in box.",
+        "keywords": ["charging", "charger", "fast charging", "watt", "warp charge", "wireless charging"],
+        "default_weight": 1.5,
+    },
     "Camera": {
-        "description": "Image clarity, low-light photography, video stabilization, and sensor performance.",
-        "keywords": ["camera", "photos", "sensor", "lens", "portrait", "night mode", "zoom"],
+        "description": "Image clarity, low-light photography, video stabilization, portrait, and sensor performance.",
+        "keywords": ["camera", "photos", "sensor", "lens", "portrait", "night mode", "zoom", "megapixels"],
         "default_weight": 2.5,
     },
     "Performance": {
-        "description": "Processor speed, responsiveness, gaming capabilities, and thermal throttling.",
-        "keywords": ["processor", "speed", "gaming", "lag", "fps", "chipset", "snapdragon", "ram"],
+        "description": "Processor speed, responsiveness, gaming capabilities, FPS, and multitasking.",
+        "keywords": ["processor", "speed", "gaming", "lag", "fps", "chipset", "snapdragon", "dimensity", "ram"],
         "default_weight": 2.5,
     },
     "Design": {
         "description": "Chassis build quality, ergonomic hand feel, weight, finish, and materials.",
-        "keywords": ["design", "build", "finish", "titanium", "glass back", "ergonomics", "lightweight"],
+        "keywords": ["design", "build", "finish", "titanium", "glass back", "ergonomics", "lightweight", "hand feel"],
         "default_weight": 1.5,
     },
     "Display": {
-        "description": "Screen resolution, AMOLED/OLED color accuracy, refresh rate, and outdoor visibility.",
-        "keywords": ["display", "screen", "AMOLED", "OLED", "120Hz", "brightness", "sharpness"],
+        "description": "Screen resolution, AMOLED/OLED color accuracy, refresh rate, and outdoor brightness.",
+        "keywords": ["display", "screen", "AMOLED", "OLED", "120Hz", "brightness", "sharpness", "hdr"],
         "default_weight": 1.8,
     },
+    "Audio & Sound": {
+        "description": "Stereo speaker loudness, sound clarity, microphone quality, and headphone jack audio.",
+        "keywords": ["audio", "speaker", "sound", "volume", "dolby", "bass", "loudspeaker", "mic"],
+        "default_weight": 1.2,
+    },
+    "Software & OS": {
+        "description": "Operating system experience, UI smoothness, bloatware, and software update policy.",
+        "keywords": ["software", "ui", "os", "android", "ios", "clean", "bloatware", "updates", "hyperos", "oneui"],
+        "default_weight": 1.4,
+    },
+    "Value for Money": {
+        "description": "Price-to-performance ratio, overall cost-worthiness, and budget value.",
+        "keywords": ["value", "price", "worth", "deal", "budget", "pricing", "money", "affordable"],
+        "default_weight": 2.0,
+    },
+    "Connectivity": {
+        "description": "5G network reception, Wi-Fi stability, Bluetooth range, GPS, and call clarity.",
+        "keywords": ["network", "5g", "wifi", "bluetooth", "signal", "reception", "connectivity", "calling", "sim"],
+        "default_weight": 1.0,
+    },
+    "Biometrics": {
+        "description": "Fingerprint scanner speed/accuracy and face unlock reliability.",
+        "keywords": ["fingerprint", "face unlock", "biometric", "scanner", "sensor"],
+        "default_weight": 1.0,
+    },
+    "Thermal & Cooling": {
+        "description": "Heat dissipation, device temperature under load, and thermal throttling.",
+        "keywords": ["heating", "heat", "thermal", "cooling", "warm", "hot", "throttling"],
+        "default_weight": 1.2,
+    },
+    "Storage": {
+        "description": "Internal storage capacity, ROM read/write speeds, and SD card expandability.",
+        "keywords": ["storage", "internal memory", "rom", "sd card", "expandable"],
+        "default_weight": 1.0,
+    },
+    "Haptics": {
+        "description": "Vibration motor feedback, typing sensation, and tactile response.",
+        "keywords": ["haptics", "vibration", "tactile", "motor"],
+        "default_weight": 0.8,
+    },
+    "Water Resistance": {
+        "description": "IP rating, dust resistance, and splash/water protection.",
+        "keywords": ["water resistant", "ip68", "ip67", "waterproof", "splash"],
+        "default_weight": 1.0,
+    },
+    "Accessories": {
+        "description": "Included accessories such as case, cable, and screen protector.",
+        "keywords": ["box", "case", "cable", "protector", "cover", "adapter"],
+        "default_weight": 0.8,
+    },
 }
+
+
+def canonicalize_aspect_name(name: str) -> str:
+    """Helper to match canonical casing from ASPECT_META or capitalize properly."""
+    clean = name.strip()
+    for standard_asp in ASPECT_META:
+        if standard_asp.lower() == clean.lower():
+            return standard_asp
+    return clean.title() if clean.islower() else clean
+
+
+def build_recommendation_paragraph(
+    prod_name: str,
+    brand: str,
+    price: Optional[float],
+    selected_priorities: List[str],
+    asp_scores: Dict[str, AspectScoreItem],
+    overall_score: Optional[float],
+) -> str:
+    """
+    Constructs an articulate, paragraph-based review synthesis explaining
+    why this device is recommended, how it performs in priority areas,
+    notable strengths, and customer consensus without requiring rigid percentage boxes.
+    """
+    sentences = []
+
+    # 1. Opening sentence
+    price_part = f" at approximately ${int(price)} USD" if price else ""
+    if selected_priorities:
+        if len(selected_priorities) == 1:
+            p_text = selected_priorities[0]
+        elif len(selected_priorities) == 2:
+            p_text = f"{selected_priorities[0]} and {selected_priorities[1]}"
+        else:
+            p_text = f"{', '.join(selected_priorities[:-1])}, and {selected_priorities[-1]}"
+        sentences.append(
+            f"The {brand} {prod_name}{price_part} emerges as a top-recommended smartphone tailored specifically for buyers prioritizing {p_text}."
+        )
+    else:
+        sentences.append(
+            f"The {brand} {prod_name}{price_part} is recommended based on comprehensive analysis of customer review sentiment."
+        )
+
+    # 2. Priority aspects qualitative evaluation
+    priority_clauses = []
+    for asp in selected_priorities:
+        item = asp_scores.get(asp)
+        if not item or not item.is_available or item.score is None:
+            continue
+        if item.score >= 70:
+            priority_clauses.append(
+                f"it excels in {asp.lower()}, with reviewers consistently praising its quality across {item.evidence_count} reviews"
+            )
+        elif item.score >= 55:
+            priority_clauses.append(
+                f"customer feedback on {asp.lower()} is generally solid and dependable with {item.positive_count} favorable mentions"
+            )
+        else:
+            priority_clauses.append(
+                f"buyer feedback regarding {asp.lower()} shows some mixed experiences, where {item.negative_count} complaints contrast with {item.positive_count} positive remarks"
+            )
+
+    if priority_clauses:
+        sentences.append("Across your core focus areas, " + "; ".join(priority_clauses) + ".")
+
+    # 3. Secondary aspects
+    secondary_pros = []
+    secondary_cons = []
+    for asp, item in asp_scores.items():
+        if asp in selected_priorities or not item.is_available or item.score is None or item.evidence_count < 2:
+            continue
+        if item.score >= 68:
+            secondary_pros.append(asp.lower())
+        elif item.score <= 45:
+            secondary_cons.append(asp.lower())
+
+    if secondary_pros and secondary_cons:
+        sentences.append(
+            f"Beyond your selected priorities, customer reviews also highlight strong satisfaction with its {', '.join(secondary_pros)}, while noting occasional trade-offs with {', '.join(secondary_cons)}."
+        )
+    elif secondary_pros:
+        sentences.append(
+            f"Beyond your primary priorities, reviewers also express high satisfaction with its {', '.join(secondary_pros)}."
+        )
+    elif secondary_cons:
+        sentences.append(
+            f"Buyers noted minor compromises in {', '.join(secondary_cons)}."
+        )
+
+    # 4. Concluding verdict
+    if overall_score is not None:
+        if overall_score >= 70:
+            sentences.append(
+                "Overall, it stands out as an excellent, highly-recommended option in this segment based on verified customer consensus."
+            )
+        elif overall_score >= 55:
+            sentences.append(
+                "Overall, it represents a well-balanced, dependable choice for daily use."
+            )
+        else:
+            sentences.append(
+                "Overall, it remains a reasonable consideration if its particular trade-offs fit your needs."
+            )
+
+    return " ".join(sentences)
 
 
 class RecommendationEngine:
@@ -63,11 +223,12 @@ class RecommendationEngine:
     Aspect-Based Smartphone Recommendation & Comparison Engine.
     Combines budget constraints, brand preferences, user aspect priorities,
     and Bayesian-smoothed aspect scores derived from verified annotations
-    and stored ABSA review predictions.
+    and stored ABSA review predictions across open and dynamic smartphone aspects.
     """
 
-    def get_aspect_definitions(self) -> List[AspectDefinition]:
-        """Returns metadata and default weights for all supported smartphone aspects."""
+    def get_aspect_definitions(self, db: Optional[Session] = None) -> List[AspectDefinition]:
+        """Returns metadata and default weights for all supported smartphone aspects,
+        including standard taxonomy categories and any dynamic aspects discovered in reviews."""
         results = []
         for aspect, meta in ASPECT_META.items():
             results.append(
@@ -78,6 +239,31 @@ class RecommendationEngine:
                     default_weight=meta["default_weight"],
                 )
             )
+
+        if db is not None:
+            known_aspects = {a.lower() for a in ASPECT_META}
+            try:
+                pred_aspects = [
+                    r[0] for r in db.query(ReviewPrediction.aspect).distinct().all() if r[0]
+                ]
+                annot_aspects = [
+                    r[0] for r in db.query(ReviewAnnotation.aspect).distinct().all() if r[0]
+                ]
+                all_db_aspects = set(pred_aspects + annot_aspects)
+                for dynamic_asp in sorted(all_db_aspects):
+                    if dynamic_asp.lower() not in known_aspects:
+                        results.append(
+                            AspectDefinition(
+                                aspect=dynamic_asp,
+                                description=f"Aspect dynamically extracted from customer reviews: {dynamic_asp}",
+                                keywords=[dynamic_asp.lower()],
+                                default_weight=1.0,
+                            )
+                        )
+                        known_aspects.add(dynamic_asp.lower())
+            except Exception as e:
+                logger.warning(f"Could not load dynamic aspects from DB: {e}")
+
         return results
 
     def get_product_prices_map(self, db: Session, product_ids: Optional[List[int]] = None) -> Dict[int, float]:
@@ -103,16 +289,18 @@ class RecommendationEngine:
         self,
         db: Session,
         product_ids: List[int],
+        requested_priorities: Optional[List[str]] = None,
     ) -> Dict[int, Dict[str, AspectScoreItem]]:
         """
         Aggregates aspect evidence from stored predictions and verified annotations.
+        Supports all open and standard smartphone aspects dynamically without fixed-list restrictions.
         Deduplicates by (review_id, aspect) and applies Bayesian smoothing.
         Returns a mapping of {product_id: {aspect_name: AspectScoreItem}}.
         """
         if not product_ids:
             return {}
 
-        # 1. Fetch Verified Human Annotations for target products
+        # 1. Fetch Verified Human Annotations for target products (open aspects)
         # Annotations carry weight 1.5
         annot_rows = (
             db.query(
@@ -125,12 +313,11 @@ class RecommendationEngine:
             .filter(
                 Review.product_id.in_(product_ids),
                 ReviewAnnotation.status == "VERIFIED",
-                ReviewAnnotation.aspect.in_(ASPECTS_LIST),
             )
             .all()
         )
 
-        # 2. Fetch Stored ABSA Model Predictions for target products
+        # 2. Fetch Stored ABSA Model Predictions for target products (open aspects)
         # Predictions carry weight = 1.0 * confidence
         pred_rows = (
             db.query(
@@ -143,7 +330,6 @@ class RecommendationEngine:
             .join(Review, ReviewPrediction.review_id == Review.id)
             .filter(
                 Review.product_id.in_(product_ids),
-                ReviewPrediction.aspect.in_(ASPECTS_LIST),
             )
             .all()
         )
@@ -155,19 +341,39 @@ class RecommendationEngine:
 
         # Insert model predictions first
         for pid, rid, asp, sent, conf in pred_rows:
+            if not asp:
+                continue
             weight = max(0.5, min(1.0, float(conf or 0.8)))
             evidence_by_review[pid][asp][rid] = (sent, weight)
 
         # Overwrite with verified annotations if present (higher precedence & weight)
         for pid, rid, asp, sent in annot_rows:
+            if not asp:
+                continue
             evidence_by_review[pid][asp][rid] = (sent, 1.5)
 
         # Compute smoothed aspect scores per product
         result: Dict[int, Dict[str, AspectScoreItem]] = {}
+        default_aspects = list(ASPECT_META.keys())
 
         for pid in product_ids:
             result[pid] = {}
-            for asp in ASPECTS_LIST:
+            # Determine which aspects to evaluate for this product:
+            # 1. All aspects that have actual review evidence for this product
+            # 2. Plus any requested user priorities (so they appear in the result even if evidence is 0)
+            # 3. If product has no evidence and no priorities, provide the top standard aspects
+            product_aspects_set = set(evidence_by_review[pid].keys())
+            if requested_priorities:
+                product_aspects_set.update(requested_priorities)
+            if not product_aspects_set:
+                product_aspects_set = set(default_aspects[:5])
+
+            # Order aspects: standard aspects first in order of ASPECT_META, then dynamic aspects alphabetically
+            ordered_aspects = [a for a in ASPECT_META if a in product_aspects_set]
+            extra_aspects = sorted([a for a in product_aspects_set if a not in ASPECT_META])
+            all_target_aspects = ordered_aspects + extra_aspects
+
+            for asp in all_target_aspects:
                 rev_records = evidence_by_review[pid].get(asp, {})
                 evidence_count = len(rev_records)
 
@@ -276,9 +482,9 @@ class RecommendationEngine:
         Calculates multi-criteria aspect-based recommendations according to user preferences.
         Ranks products by weighted aspect performance, evidence reliability, and budget fit.
         """
-        # Validate selected priorities
+        # Validate selected priorities (supports any standard or open-vocabulary aspect)
         selected_priorities = [
-            p.strip().capitalize() for p in request.priorities if p.strip().capitalize() in ASPECTS_LIST
+            canonicalize_aspect_name(p) for p in request.priorities if p and p.strip()
         ]
         if not selected_priorities:
             selected_priorities = ["Camera", "Battery", "Performance"]
@@ -288,7 +494,7 @@ class RecommendationEngine:
         weights_map: Dict[str, float] = {}
         if request.priority_weights:
             for asp, w in request.priority_weights.items():
-                clean_asp = asp.strip().capitalize()
+                clean_asp = canonicalize_aspect_name(asp)
                 if clean_asp in selected_priorities and w > 0:
                     weights_map[clean_asp] = float(w)
 
@@ -321,7 +527,9 @@ class RecommendationEngine:
             )
 
         product_ids = [p.id for p, _, _ in eligible]
-        aspect_scores_by_prod = self.compute_aspect_scores_for_products(db, product_ids)
+        aspect_scores_by_prod = self.compute_aspect_scores_for_products(
+            db, product_ids, requested_priorities=selected_priorities
+        )
 
         # Tally predictions count for each product
         pred_counts_rows = (
@@ -372,31 +580,23 @@ class RecommendationEngine:
             strengths = []
             for asp, item in asp_scores.items():
                 if item.is_available and item.score is not None and item.score >= 68.0 and item.evidence_count >= 2:
-                    strengths.append(f"{asp} ({item.score}/100)")
+                    strengths.append(f"Strong {asp}")
 
             # Determine Weaknesses (Score <= 45 with evidence >= 2)
             weaknesses = []
             for asp, item in asp_scores.items():
                 if item.is_available and item.score is not None and item.score <= 45.0 and item.evidence_count >= 2:
-                    weaknesses.append(f"{asp} ({item.score}/100)")
+                    weaknesses.append(f"Weaker {asp}")
 
-            # Generate personalized explanation
-            explanation_parts = []
-            if overall_score is not None:
-                top_priority = selected_priorities[0]
-                top_item = asp_scores.get(top_priority)
-                if top_item and top_item.is_available and top_item.score is not None:
-                    explanation_parts.append(
-                        f"Performs strongly in your #1 priority {top_priority} with an aspect score of {top_item.score}/100 based on {top_item.evidence_count} reviews."
-                    )
-                else:
-                    explanation_parts.append(
-                        f"Achieved an overall recommendation score of {overall_score}/100 across evaluated priorities."
-                    )
-            else:
-                explanation_parts.append(
-                    "Currently has limited aspect-level review evidence for your selected priorities."
-                )
+            # Generate paragraph-based recommendation narrative
+            explanation = build_recommendation_paragraph(
+                prod_name=prod.name,
+                brand=prod.brand,
+                price=price,
+                selected_priorities=selected_priorities,
+                asp_scores=asp_scores,
+                overall_score=overall_score,
+            )
 
             data_limitations = []
             missing_priorities = [
@@ -405,7 +605,7 @@ class RecommendationEngine:
             ]
             if missing_priorities:
                 data_limitations.append(
-                    f"Insufficient review evidence for priority aspects: {', '.join(missing_priorities)}."
+                    f"Limited review evidence for priority aspects: {', '.join(missing_priorities)}."
                 )
             if total_revs < 10:
                 data_limitations.append(
@@ -426,7 +626,7 @@ class RecommendationEngine:
                 total_predictions_count=p_preds,
                 strengths=strengths,
                 weaknesses=weaknesses,
-                explanation=" ".join(explanation_parts),
+                explanation=explanation,
                 data_limitations=data_limitations,
             )
 
@@ -482,9 +682,7 @@ class RecommendationEngine:
         rev_counts = {r[0]: int(r[1]) for r in rev_count_rows}
 
         comparison_items: List[ProductComparisonItem] = []
-        best_aspect_performer: Dict[str, Tuple[Optional[str], float]] = {
-            asp: (None, -1.0) for asp in ASPECTS_LIST
-        }
+        best_aspect_performer: Dict[str, Tuple[Optional[str], float]] = defaultdict(lambda: (None, -1.0))
 
         for prod in products:
             price = prices_map.get(prod.id)
