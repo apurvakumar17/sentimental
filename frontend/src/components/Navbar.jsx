@@ -3,7 +3,6 @@ import {
   Database,
   Cpu,
   Layers,
-  SlidersHorizontal,
   UploadCloud,
   Sparkles,
   Award,
@@ -18,7 +17,6 @@ export default function Navbar({ activeTab, setActiveTab }) {
     { id: 'dashboard', label: 'Overview', desc: 'System overview & catalog summary', icon: Layers },
     { id: 'scraper', label: 'Scraper', desc: 'Scraper Engine & background jobs', icon: Cpu },
     { id: 'reviews', label: 'Reviews', desc: 'Review Warehouse & text preview', icon: Database },
-    { id: 'datasets', label: 'Quality', desc: 'Dataset hygiene & deduplication', icon: SlidersHorizontal },
     { id: 'imports', label: 'Import', desc: 'Kaggle CSV dataset ingestion', icon: UploadCloud },
     { id: 'absa', label: 'ABSA', desc: 'Aspect-Based Sentiment Analysis', icon: Sparkles },
     { id: 'recommendations', label: 'Recommendations', shortLabel: 'Recommend', desc: 'Multi-criteria phone ranking', icon: Award, isHighlight: true },
@@ -51,9 +49,6 @@ export default function Navbar({ activeTab, setActiveTab }) {
               <div className="flex items-center space-x-2">
                 <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-[#8BBB92] to-[#2A835F] group-hover:from-white group-hover:to-[#8BBB92] transition-all">
                   Sentimental
-                </span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#2A835F]/20 text-[#8BBB92] border border-[#2A835F]/40">
-                  Phase 4
                 </span>
               </div>
               <p className="text-[11px] text-[#7ea698] font-medium leading-none hidden xl:block">
@@ -157,11 +152,6 @@ export default function Navbar({ activeTab, setActiveTab }) {
                       <div className="text-[10px] text-[#649182] font-normal">{tab.desc}</div>
                     </div>
                   </div>
-                  {isHighlight && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#2A835F]/30 text-[#8BBB92] border border-[#2A835F]/50">
-                      Phase 4
-                    </span>
-                  )}
                 </button>
               );
             })}

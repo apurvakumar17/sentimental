@@ -294,7 +294,7 @@ export default function RecommendationDashboard({ onNavigateToReviews }) {
                 <Award className="w-6 h-6 text-[#8BBB92]" />
               </div>
               <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#2A835F]/20 text-[#8BBB92] border border-[#2A835F]/40">
-                Phase 4: Multi-Criteria Recommendation
+                Multi-Criteria Recommendation
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">

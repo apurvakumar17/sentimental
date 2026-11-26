@@ -122,7 +122,7 @@ export const api = {
     const qStr = qs.toString();
     return request(`/absa/annotations${qStr ? `?${qStr}` : ''}`);
   },
-  // Phase 4: Product Recommendations
+  // Product Recommendations
   getRecommendations: (payload) => request('/recommendations', {
     method: 'POST',
     body: JSON.stringify(payload),

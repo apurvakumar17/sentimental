@@ -52,21 +52,34 @@ export default function JobTracker({ initialJob, onJobCompleted, onNavigateToTab
 
   return (
     <div className="rounded-2xl border border-[#12544F]/60 bg-[#071b1f]/95 p-6 backdrop-blur-xl shadow-2xl">
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-[#12544F]/50">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#12544F]/50 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center space-x-2">
-            <h3 className="text-base font-bold text-white">Job Monitor</h3>
-            <span className="   text-xs px-2 py-0.5 rounded bg-[#030c0e] text-[#8BBB92] border border-[#12544F]/70">
+            <h3 className="text-base font-bold text-white shrink-0">Job Monitor</h3>
+            <span className="text-xs px-2 py-0.5 rounded bg-[#030c0e] text-[#8BBB92] border border-[#12544F]/70 font-mono shrink-0">
               {job.job_id.slice(0, 8)}...
             </span>
           </div>
-          <p className="text-xs text-[#7ea698] mt-0.5">
-            Target: <span className="text-[#8BBB92]   ">{job.target_url}</span>
-            {job.product_name && ` (${job.product_name})`}
-          </p>
+          <div className="text-xs text-[#7ea698] mt-1 break-all min-w-0">
+            <span className="text-[#649182] font-medium">Target: </span>
+            <a
+              href={job.target_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#8BBB92] hover:underline hover:text-white transition-colors"
+              title={job.target_url}
+            >
+              {job.target_url}
+            </a>
+            {job.product_name && (
+              <span className="text-[#f2fbf6] font-semibold ml-1.5">
+                ({job.product_name})
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 shrink-0 self-start sm:self-auto">
           <span className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusColors[job.status]}`}>
             <StatusIcon className={`w-3.5 h-3.5 ${job.status === 'RUNNING' ? 'animate-spin' : ''}`} />
             <span>{job.status}</span>

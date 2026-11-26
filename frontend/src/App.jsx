@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   RefreshCw,
   Sparkles,
-  UploadCloud
+  UploadCloud,
+  Trash2
 } from 'lucide-react';
 import { api } from './api/client';
 import Navbar from './components/Navbar';
@@ -19,7 +20,6 @@ import ScraperLauncher from './components/ScraperLauncher';
 import JobTracker from './components/JobTracker';
 import JobHistory from './components/JobHistory';
 import ReviewExplorer from './components/ReviewExplorer';
-import DatasetManager from './components/DatasetManager';
 import DatasetImporter from './components/DatasetImporter';
 import ClearDatabaseModal from './components/ClearDatabaseModal';
 import AbsaDashboard from './components/AbsaDashboard';
@@ -83,7 +83,7 @@ export default function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Top Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <StatCard
             title="Collected Reviews"
             value={totalReviews}
@@ -105,13 +105,6 @@ export default function App() {
             icon={Cpu}
             color="lightGreen"
           />
-          <StatCard
-            title="Duplicates Filtered"
-            value={totalDuplicates}
-            subtitle="SHA256 Hash Guard"
-            icon={ShieldCheck}
-            color="amber"
-          />
         </div>
 
         {activeTab === 'dashboard' && (
@@ -126,7 +119,7 @@ export default function App() {
                     Automated review scraping with 3-tier deduplication, polite rate-limiting, and SQLite persistence.
                   </p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-3 shrink-0 flex-wrap">
                   <button
                     onClick={() => setActiveTab('scraper')}
                     className="group inline-flex items-center space-x-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#2A835F] via-[#2A835F] to-[#12544F] hover:from-[#329b71] hover:to-[#186a64] text-white font-bold text-sm shadow-xl shadow-[#2A835F]/25 hover:shadow-[#2A835F]/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
@@ -141,12 +134,6 @@ export default function App() {
                     <span>Browse Reviews</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('datasets')}
-                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-[#12544F]/50 border border-[#2A835F]/60 hover:bg-[#12544F] text-[#8BBB92] hover:text-white font-semibold text-xs transition-colors"
-                  >
-                    <span>Dataset & Quality</span>
-                  </button>
-                  <button
                     onClick={() => setActiveTab('imports')}
                     className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-[#2A835F]/30 border border-[#2A835F]/60 hover:bg-[#2A835F]/50 text-[#8BBB92] hover:text-white font-semibold text-xs transition-colors"
                   >
@@ -159,6 +146,14 @@ export default function App() {
                   >
                     <Sparkles className="w-3.5 h-3.5 text-[#8BBB92]" />
                     <span>ABSA Analysis</span>
+                  </button>
+                  <button
+                    onClick={() => setIsClearDbModalOpen(true)}
+                    className="inline-flex items-center space-x-2 px-4 py-3.5 rounded-xl bg-rose-950/40 border border-rose-700/60 hover:bg-rose-900/60 text-rose-300 hover:text-white font-semibold text-xs transition-colors shadow-sm hover:shadow-rose-950/50"
+                    title="Reset & Clear SQLite Database"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Clear Database</span>
                   </button>
                 </div>
               </div>
@@ -246,24 +241,14 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 4: Dataset & Quality Management */}
-        {activeTab === 'datasets' && (
-          <div>
-            <DatasetManager
-              products={products}
-              onOpenClearDbModal={() => setIsClearDbModalOpen(true)}
-            />
-          </div>
-        )}
-
-        {/* Tab 5: Kaggle Dataset Ingestion */}
+        {/* Tab 4: Kaggle Dataset Ingestion */}
         {activeTab === 'imports' && (
           <div>
             <DatasetImporter onImportCompleted={loadData} />
           </div>
         )}
 
-        {/* Tab 6: Aspect-Based Sentiment Analysis */}
+        {/* Tab 5: Aspect-Based Sentiment Analysis */}
         {activeTab === 'absa' && (
           <div>
             <AbsaDashboard
@@ -273,7 +258,7 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 7: Phase 4 Recommendation Engine */}
+        {/* Tab 6: Recommendation Engine */}
         {activeTab === 'recommendations' && (
           <div>
             <RecommendationDashboard
@@ -284,9 +269,17 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#12544F]/40 bg-[#030c0e] py-6 text-center text-xs text-[#649182]">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer className="border-t border-[#12544F]/40 bg-[#030c0e] py-6 text-xs text-[#649182]">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span>SmartReview — Aspect-Based Sentiment Analysis & Recommendation System</span>
+          <button
+            onClick={() => setIsClearDbModalOpen(true)}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-rose-950/40 border border-rose-800/50 hover:bg-rose-900/50 text-rose-300 hover:text-rose-100 font-medium text-xs transition-colors"
+            title="Reset & Clear Database"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+            <span>Clear Database</span>
+          </button>
         </div>
       </footer>
 

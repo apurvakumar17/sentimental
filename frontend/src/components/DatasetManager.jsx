@@ -165,9 +165,6 @@ export default function DatasetManager({ products, onOpenClearDbModal }) {
               <div className="min-w-0">
                 <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight flex flex-wrap items-center gap-2">
                   <span>Dataset Preparation & Data Quality Pipeline</span>
-                  <span className="text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#12544F]/80 text-[#8BBB92] border border-[#2A835F]/50 shrink-0">
-                    Phase 2
-                  </span>
                 </h1>
                 <p className="text-xs text-[#7ea698] mt-0.5">
                   Safe Unicode NFKC preprocessing, multi-rule data health auditing, and deterministic export generation for ABSA.
